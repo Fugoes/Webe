@@ -32,9 +32,12 @@ void Server::start() {
 }
 
 void Server::do_socket() {
+    int enable = 1;
     struct sockaddr_in server_sockaddr;
     this->server_sock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     IF_NEGATIVE_EXIT(this->server_sock);
+    IF_NEGATIVE_EXIT(setsockopt(this->server_sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)));
+    IF_NEGATIVE_EXIT(setsockopt(this->server_sock, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(int)));
 }
 
 void Server::do_bind() {
