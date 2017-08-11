@@ -1,5 +1,6 @@
 #include <iostream>
 #include "client.h"
+#include "utils.h"
 
 extern "C" {
 #include <unistd.h>
@@ -24,6 +25,8 @@ void Client::handle_in(Client *self) {
             printf("--> %d\n" "%s" "<--\n", self->fd, self->buffer);
         } else if (errno == EAGAIN) {
             break;
+        } else {
+            IF_NEGATIVE_EXIT(-1);
         }
     }
 }

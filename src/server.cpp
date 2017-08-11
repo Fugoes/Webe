@@ -87,10 +87,10 @@ void Server::event_loop(int max_events) {
                 this->fd_to_client[client_sock] = new Client(client_sock, std::string(ip_str), client_addr.sin_port);
             } else {
                 switch (events[i].events) {
-                    case EPOLLIN:
+                    case EPOLLIN: // ready for read
                         Client::handle_in(this->fd_to_client[events[i].data.fd]);
                         break;
-                    case EPOLLIN | EPOLLRDHUP:
+                    case EPOLLIN | EPOLLRDHUP: // disconnect
                         Client::handle_rdhup(this->fd_to_client[events[i].data.fd]);
                         break;
                     default:
