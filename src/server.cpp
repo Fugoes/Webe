@@ -1,5 +1,6 @@
 #include "server.h"
 #include <cstring>
+#include <iostream>
 
 extern "C" {
 #include <sys/types.h>
@@ -23,6 +24,11 @@ Server::Server(std::string server_addr, uint16_t port_no) {
 
 
 void Server::start() {
+    this->do_socket();
+    this->do_bind();
+    this->do_listen();
+    this->do_epoll();
+    this->event_loop();
 }
 
 void Server::do_socket() {
@@ -57,17 +63,27 @@ void Server::event_loop(int max_events) {
 
     int nevent, i, j;
     int client_sock;
+    char ip_str[INET6_ADDRSTRLEN];
     struct sockaddr_in client_addr;
-    socklen_t client_addrlen;
+    socklen_t client_addrlen = sizeof(struct sockaddr_in);
     for (;;) {
         nevent = epoll_wait(this->epoll_fd, events, max_events, -1);
         IF_NEGATIVE_EXIT(nevent);
         for (i = 0; i < nevent; i++) {
             if (events[i].data.fd == this->server_sock) {
+                client_addrlen = sizeof(struct sockaddr_in);
                 // new client
                 client_sock = accept(server_sock, (struct sockaddr *) &client_addr, &client_addrlen);
                 IF_NEGATIVE_EXIT(client_sock);
                 Server::set_nonblocking(client_sock);
+                ev.events = EPOLLIN | EPOLLET;
+                ev.data.fd = client_sock;
+                IF_NEGATIVE_EXIT(epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, client_sock, &ev));
+                inet_ntop(AF_INET, &client_addr.sin_addr, ip_str, sizeof(ip_str));
+                this->fd_to_client[client_sock] = new Client(client_sock, std::string(ip_str), client_addr.sin_port);
+            } else {
+                // client
+                this->fd_to_client[events[i].data.fd]->handle_in();
             }
         }
     }

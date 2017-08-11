@@ -9,6 +9,7 @@
     if (EXP < 0) {                                      \
         fprintf(stderr, "%s:%d\n", __FILE__, __LINE__); \
         fprintf(stderr, "--> %s\n", #EXP);              \
+        perror("info");                                 \
         exit(1);                                        \
     }
 

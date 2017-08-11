@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <cstdint>
 
+#include "client.h"
+
 
 class Server {
 public:
@@ -18,6 +20,7 @@ private:
     uint16_t port_no;
     int server_sock;
     int epoll_fd;
+    std::unordered_map<int, Client *> fd_to_client;
 
     void do_socket();
     void do_bind();

@@ -3,7 +3,7 @@
 #include "utils.h"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
-    IF_NEGATIVE_EXIT(-1);
+    auto server = Server("0.0.0.0", 80);
+    server.start();
     return 0;
 }
