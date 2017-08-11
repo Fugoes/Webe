@@ -65,7 +65,7 @@ void Server::event_loop(int max_events) {
         for (i = 0; i < nevent; i++) {
             if (events[i].data.fd == this->server_sock) {
                 // new client
-                client_sock = accept(server_sock, (struct sockaddr *)&client_addr, &client_addrlen);
+                client_sock = accept(server_sock, (struct sockaddr *) &client_addr, &client_addrlen);
                 IF_NEGATIVE_EXIT(client_sock);
                 Server::set_nonblocking(client_sock);
             }
