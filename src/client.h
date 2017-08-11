@@ -9,8 +9,10 @@
 class Client {
 public:
     Client(int fd, std::string addr, uint16_t port_no);
+    ~Client();
 
     static void handle_in(Client *self);
+    static void handle_rdhup(Client *self);
 
 private:
     std::string addr;

@@ -27,3 +27,12 @@ void Client::handle_in(Client *self) {
         }
     }
 }
+
+void Client::handle_rdhup(Client *self) {
+    printf("Client %s:%u disconnect\n", self->addr.c_str(), self->port_no);
+    delete self;
+}
+
+Client::~Client() {
+    close(this->fd);
+}

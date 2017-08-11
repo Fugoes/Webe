@@ -91,6 +91,7 @@ void Server::event_loop(int max_events) {
                         Client::handle_in(this->fd_to_client[events[i].data.fd]);
                         break;
                     case EPOLLIN | EPOLLRDHUP:
+                        Client::handle_rdhup(this->fd_to_client[events[i].data.fd]);
                         break;
                     default:
                         printf("%d\n", events[i].events);
