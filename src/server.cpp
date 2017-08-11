@@ -22,12 +22,12 @@ Server::Server(std::string server_addr, uint16_t port_no) {
     this->port_no = port_no;
 }
 
-
 void Server::start() {
     this->do_socket();
     this->do_bind();
     this->do_listen();
     this->do_epoll();
+    printf("Listen %s:%u\n", this->server_addr.c_str(), this->port_no);
     this->event_loop();
 }
 
@@ -82,6 +82,7 @@ void Server::event_loop(int max_events) {
                 inet_ntop(AF_INET, &client_addr.sin_addr, ip_str, sizeof(ip_str));
                 this->fd_to_client[client_sock] = new Client(client_sock, std::string(ip_str), client_addr.sin_port);
             } else {
+                printf("%d\n", events[i].events);
                 // client
                 this->fd_to_client[events[i].data.fd]->handle_in();
             }
