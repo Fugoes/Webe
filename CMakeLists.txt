@@ -3,5 +3,5 @@ project(Webe)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES src/main.cpp)
+set(SOURCE_FILES src/main.cpp src/utils.h)
 add_executable(Webe ${SOURCE_FILES})
