@@ -87,15 +87,12 @@ void Server::event_loop(int max_events) {
             } else {
                 switch (events[i].events) {
                     case EPOLLIN:
-                        printf("EPOLLIN\n");
                         this->fd_to_client[events[i].data.fd]->handle_in();
                         break;
-                    case EPOLLRDHUP:
                     case EPOLLIN | EPOLLRDHUP:
-                        printf("EPOLLRDHUP\n");
                         break;
                     default:
-                        printf("Errno = %d\n", events[i].events);
+                        printf("%d\n", events[i].events);
                         IF_NEGATIVE_EXIT(-1);
                 }
             }
