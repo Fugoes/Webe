@@ -76,15 +76,25 @@ void Server::event_loop(int max_events) {
                 client_sock = accept(server_sock, (struct sockaddr *) &client_addr, &client_addrlen);
                 IF_NEGATIVE_EXIT(client_sock);
                 Server::set_nonblocking(client_sock);
-                ev.events = EPOLLIN | EPOLLET;
+                ev.events = EPOLLIN | EPOLLRDHUP | EPOLLET;
                 ev.data.fd = client_sock;
                 IF_NEGATIVE_EXIT(epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, client_sock, &ev));
                 inet_ntop(AF_INET, &client_addr.sin_addr, ip_str, sizeof(ip_str));
                 this->fd_to_client[client_sock] = new Client(client_sock, std::string(ip_str), client_addr.sin_port);
             } else {
-                printf("%d\n", events[i].events);
-                // client
-                this->fd_to_client[events[i].data.fd]->handle_in();
+                switch (events[i].events) {
+                    case EPOLLIN:
+                        printf("EPOLLIN\n");
+                        this->fd_to_client[events[i].data.fd]->handle_in();
+                        break;
+                    case EPOLLRDHUP:
+                    case EPOLLIN | EPOLLRDHUP:
+                        printf("EPOLLRDHUP\n");
+                        break;
+                    default:
+                        printf("Errno = %d\n", events[i].events);
+                        IF_NEGATIVE_EXIT(-1);
+                }
             }
         }
     }

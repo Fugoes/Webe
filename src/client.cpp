@@ -22,15 +22,8 @@ void Client::handle_in() {
         if (size > 0) {
             this->buffer[size] = '\0';
             printf("--> %d\n" "%s" "<--\n", this->fd, this->buffer);
-        } else if (size == 0) {
-            close(this->fd);
-        } else {
-            if (errno == EAGAIN) {
-                break;
-            }
-            if (errno == EBADF) {
-                close(this->fd);
-            }
+        } else if (errno == EAGAIN) {
+            break;
         }
     }
 }
