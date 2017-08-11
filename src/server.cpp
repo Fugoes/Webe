@@ -69,13 +69,14 @@ void Server::event_loop(int max_events) {
     char ip_str[INET6_ADDRSTRLEN];
     struct sockaddr_in client_addr;
     socklen_t client_addrlen = sizeof(struct sockaddr_in);
+    // event loop
     for (;;) {
         nevent = epoll_wait(this->epoll_fd, events, max_events, -1);
         IF_NEGATIVE_EXIT(nevent);
         for (i = 0; i < nevent; i++) {
             if (events[i].data.fd == this->server_sock) {
-                client_addrlen = sizeof(struct sockaddr_in);
                 // new client
+                client_addrlen = sizeof(struct sockaddr_in);
                 client_sock = accept(server_sock, (struct sockaddr *) &client_addr, &client_addrlen);
                 IF_NEGATIVE_EXIT(client_sock);
                 Server::set_nonblocking(client_sock);
@@ -87,7 +88,7 @@ void Server::event_loop(int max_events) {
             } else {
                 switch (events[i].events) {
                     case EPOLLIN:
-                        this->fd_to_client[events[i].data.fd]->handle_in();
+                        Client::handle_in(this->fd_to_client[events[i].data.fd]);
                         break;
                     case EPOLLIN | EPOLLRDHUP:
                         break;

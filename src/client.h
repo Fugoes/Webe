@@ -10,7 +10,7 @@ class Client {
 public:
     Client(int fd, std::string addr, uint16_t port_no);
 
-    void handle_in();
+    static void handle_in(Client *self);
 
 private:
     std::string addr;
