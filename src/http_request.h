@@ -22,12 +22,15 @@ class HTTPRequest {
 public:
     HTTPRequest();
 
-    void try_parse(int fd);
+    void parse(int fd);
 
 private:
     HTTPRequestHeader header;
+    std::string data;
     char buf[buffer_size];
     int cursor;
+
+    void get_data(char *buf, int content_len, int left, int right);
 };
 
 

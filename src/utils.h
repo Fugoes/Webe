@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstdio>
+#include <sstream>
 
 #define IF_NEGATIVE_EXIT(EXP)                           \
     if (EXP < 0) {                                      \
@@ -12,5 +13,13 @@
         perror("info");                                 \
         exit(1);                                        \
     }
+
+int string_to_int(const std::string str) {
+    int result;
+    std::stringstream ss;
+    ss << str;
+    ss >> result;
+    return result;
+}
 
 #endif //WEBE_UTILS_H

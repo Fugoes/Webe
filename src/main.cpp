@@ -12,7 +12,9 @@ int main(int argc, char *argv[]) {
             "Accept-Encoding: gzip, deflate\r\n"
             "Connection: keep-alive\r\n"
             "Accept: */*\r\n"
-            "\r\n";
+            "Content-Length: 12\r\n"
+            "\r\n"
+            "Hello World!";
     b.parse(s, 0, sizeof(s) - 1);
     std::cout << b.method << " " << b.uri << " " << b.version << std::endl;
     for (auto && item : b.header) {
