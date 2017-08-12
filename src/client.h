@@ -3,6 +3,10 @@
 
 #include <string>
 
+class Client;
+
+#include "server.h"
+
 #define CLIENT_BUFFER_SIZE 65536
 
 
@@ -14,7 +18,7 @@ public:
     static int client_delete;
 
     static void handle_in(Client *self);
-    static void handle_rdhup(Client *self);
+    static void handle_rdhup(Client *self, Server *server);
 
 private:
     std::string addr;

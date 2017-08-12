@@ -14,6 +14,8 @@ extern "C" {
 #include <fcntl.h>
 }
 
+int Server::time_stamp = 0;
+
 Server::Server(const char *server_addr, uint16_t port_no) {
     this->server_addr = std::string(server_addr);
     this->port_no = port_no;
@@ -88,10 +90,13 @@ void Server::event_loop(int max_events) {
     for (;;) {
         nevent = epoll_wait(this->epoll_fd, events, max_events, -1);
         // std::cout << nevent << std::endl;
-        IF_NEGATIVE_EXIT(nevent + 1);
+        if (nevent == -1 && errno == EINTR) {
+            continue;
+        } else {
+            IF_NEGATIVE_EXIT(nevent);
+        }
         for (i = 0; i < nevent; i++) {
-            if (events[i].data.fd == this->server_sock) {
-                // new client
+            if (events[i].data.fd == this->server_sock) { // new client
                 client_addrlen = sizeof(struct sockaddr_in);
                 client_sock = accept(server_sock, (struct sockaddr *) &client_addr, &client_addrlen);
                 IF_NEGATIVE_EXIT(client_sock);
@@ -107,7 +112,7 @@ void Server::event_loop(int max_events) {
                         Client::handle_in(this->fd_to_client[events[i].data.fd]);
                         break;
                     default:
-                        Client::handle_rdhup(this->fd_to_client[events[i].data.fd]);
+                        Client::handle_rdhup(this->fd_to_client[events[i].data.fd], this);
                         break;
                 }
             }

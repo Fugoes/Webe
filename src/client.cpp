@@ -43,8 +43,8 @@ void Client::handle_in(Client *self) {
     }
 }
 
-void Client::handle_rdhup(Client *self) {
-    // printf("Client %s:%u disconnect\n", self->addr.c_str(), self->port_no);
+void Client::handle_rdhup(Client *self, Server *server) {
+    server->fd_to_client.erase(self->fd);
     delete self;
 }
 
