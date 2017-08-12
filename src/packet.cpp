@@ -22,7 +22,7 @@ void HTTPResponse::send(int fd) {
     IF_NEGATIVE_EXIT(write(fd, this->raw.c_str(), this->raw.length()));
 }
 
-HTTPHeader::HTTPHeader() { }
+HTTPHeader::HTTPHeader() {}
 
 void HTTPHeader::append(string name, string value) {
     this->header.push_back(make_tuple(name, value));

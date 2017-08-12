@@ -9,6 +9,7 @@
 using namespace std;
 
 class HTTPHeader;
+
 class HTTPResponse;
 
 class HTTPHeader {
@@ -20,6 +21,7 @@ public:
     void append(string name, string value);
 
     string raw;
+
     static string date();
 
 private:
@@ -39,7 +41,9 @@ public:
     string raw;
 
     HTTPResponse();
+
     void parse();
+
     void send(int fd);
 };
 
