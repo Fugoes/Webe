@@ -2,31 +2,27 @@
 #define WEBE_PACKET_H
 
 #include <string>
-#include <vector>
 #include <tuple>
 #include <list>
 
-using namespace std;
-
 class HTTPHeader;
-
 class HTTPResponse;
 
 class HTTPHeader {
 public:
     HTTPHeader();
 
-    void set_status(string status_code);
+    void set_status(std::string status_code);
 
-    void append(string name, string value);
+    void append(std::string name, std::string value);
 
-    string raw;
+    std::string raw;
 
-    static string date();
+    static std::string date();
 
 private:
-    string status_code;
-    list <tuple<string, string>> header;
+    std::string status_code;
+    std::list <std::tuple<std::string, std::string>> header;
 
     void parse();
 
@@ -37,8 +33,8 @@ private:
 class HTTPResponse {
 public:
     HTTPHeader header;
-    string data;
-    string raw;
+    std::string data;
+    std::string raw;
 
     HTTPResponse();
 

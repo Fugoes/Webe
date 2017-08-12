@@ -9,8 +9,8 @@ HTTPResponse::HTTPResponse() {
 }
 
 void HTTPResponse::parse() {
-    stringstream ss;
-    string content_length;
+    std::stringstream ss;
+    std::string content_length;
     ss << this->data.length();
     ss >> content_length;
     this->header.append("Content-Length", content_length);
@@ -24,26 +24,26 @@ void HTTPResponse::send(int fd) {
 
 HTTPHeader::HTTPHeader() {}
 
-void HTTPHeader::append(string name, string value) {
-    this->header.push_back(make_tuple(name, value));
+void HTTPHeader::append(std::string name, std::string value) {
+    this->header.push_back(std::make_tuple(name, value));
 }
 
-void HTTPHeader::set_status(string status_code) {
+void HTTPHeader::set_status(std::string status_code) {
     this->status_code = status_code;
 }
 
 void HTTPHeader::parse() {
     this->raw = "HTTP/1.1 " + this->status_code + "\r\n";
     for (auto &&item : this->header) {
-        this->raw += get<0>(item) + ": " + get<1>(item) + "\r\n";
+        this->raw += std::get<0>(item) + ": " + std::get<1>(item) + "\r\n";
     }
     this->raw += "\r\n";
 }
 
-string HTTPHeader::date() {
+std::string HTTPHeader::date() {
     char buf[128];
     time_t now = time(0);
     struct tm tm = *gmtime(&now);
     strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S %Z", &tm);
-    return string(buf);
+    return std::string(buf);
 }
