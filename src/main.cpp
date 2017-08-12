@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
             "Content-Length: 12\r\n"
             "\r\n"
             "Hello World!";
-    b.parse(s, 0, sizeof(s) - 1);
+    b.parse(s, sizeof(s) - 1);
     std::cout << b.method << " " << b.uri << " " << b.version << std::endl;
     for (auto && item : b.header) {
         std::cout << item.first << ": " << item.second << std::endl;
