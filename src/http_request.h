@@ -27,7 +27,7 @@ public:
 private:
     HTTPRequestHeader header;
     char buf[buffer_size];
-    size_t cursor;
+    int cursor;
 };
 
 

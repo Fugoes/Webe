@@ -1,7 +1,6 @@
 #include "http_request.h"
 #include <unistd.h>
 #include <iostream>
-#include <cerrno>
 #include "utils.h"
 
 #define BUFFER_SIZE 65536
@@ -43,7 +42,7 @@ void HTTPRequest::try_parse(int fd) {
     static ssize_t size = 0;
     // read until cannot read
     for (;;) {
-        size = read(fd, this->buf + this->cursor, BUFFER_SIZE - this->cursor);
+        size = read(fd, this->buf + this->cursor, (size_t)(BUFFER_SIZE - this->cursor));
         if (size > 0) {
             this->cursor += size;
         } else if (errno == EAGAIN) {
@@ -86,6 +85,7 @@ int HTTPRequestHeader::parse(char *buf, int left, int right) {
     buf[end] = '\r';
     begin = end + 2;
     // Parse key -> value pair
+    if (!(begin + 1 < right)) throw "SyntaxError";
     while (!(buf[begin] == '\r' && buf[begin + 1] == '\n')) {
         // Key: Value
         // Key
@@ -99,9 +99,10 @@ int HTTPRequestHeader::parse(char *buf, int left, int right) {
         buf[end] = '\0';
         auto value = std::string(buf + begin);
         buf[end] = '\r';
-        begin = end + 2;
         // Add (Key, Value) to header
         this->header[key] = value;
+        begin = end + 2;
+        if (!(begin + 1 < right)) throw "SyntaxError";
     }
     return begin + 2;
 }
