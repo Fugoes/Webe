@@ -28,7 +28,7 @@ void Server::start() {
     this->do_listen();
     this->do_epoll();
     printf("Listen %s:%u\n", this->server_addr.c_str(), this->port_no);
-    this->event_loop();
+    this->event_loop(1024);
 }
 
 void Server::do_socket() {
@@ -72,6 +72,7 @@ void Server::event_loop(int max_events) {
     // event loop
     for (;;) {
         nevent = epoll_wait(this->epoll_fd, events, max_events, -1);
+        // std::cout << nevent << std::endl;
         IF_NEGATIVE_EXIT(nevent);
         for (i = 0; i < nevent; i++) {
             if (events[i].data.fd == this->server_sock) {
@@ -90,12 +91,9 @@ void Server::event_loop(int max_events) {
                     case EPOLLIN: // ready for read
                         Client::handle_in(this->fd_to_client[events[i].data.fd]);
                         break;
-                    case EPOLLIN | EPOLLRDHUP: // disconnect
+                    default:
                         Client::handle_rdhup(this->fd_to_client[events[i].data.fd]);
                         break;
-                    default:
-                        printf("%d\n", events[i].events);
-                        IF_NEGATIVE_EXIT(-1);
                 }
             }
         }

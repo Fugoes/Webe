@@ -1,5 +1,6 @@
 #include <iostream>
 #include "server.h"
+#include "packet.h"
 #include "utils.h"
 
 int main() {

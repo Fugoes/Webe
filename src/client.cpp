@@ -1,5 +1,6 @@
 #include <iostream>
 #include "client.h"
+#include "packet.h"
 #include "utils.h"
 
 extern "C" {
@@ -21,8 +22,15 @@ void Client::handle_in(Client *self) {
     for (;;) {
         size = read(self->fd, self->buffer, CLIENT_BUFFER_SIZE - 1);
         if (size > 0) {
-            self->buffer[size] = '\0';
-            printf("--> %d\n" "%s" "<--\n", self->fd, self->buffer);
+            HTTPResponse r;
+            r.data = "Hello World\r\n";
+            r.header.set_status("200 OK");
+            r.header.append("Server", "Webe/0.1");
+            r.header.append("Date", HTTPHeader::date());
+            r.header.append("Content-Type", "text/html");
+            r.header.append("Connection", "Keep-Alive");
+            r.parse();
+            r.send(self->fd);
         } else if (errno == EAGAIN) {
             break;
         } else {
