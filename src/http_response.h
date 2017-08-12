@@ -1,16 +1,16 @@
-#ifndef WEBE_PACKET_H
-#define WEBE_PACKET_H
+#ifndef WEBE_HTTP_RESPONSE_H
+#define WEBE_HTTP_RESPONSE_H
 
 #include <string>
 #include <tuple>
 #include <list>
 
-class HTTPHeader;
+class HTTPResponseHeader;
 class HTTPResponse;
 
-class HTTPHeader {
+class HTTPResponseHeader {
 public:
-    HTTPHeader();
+    HTTPResponseHeader();
 
     void set_status(std::string status_code);
 
@@ -32,7 +32,7 @@ private:
 
 class HTTPResponse {
 public:
-    HTTPHeader header;
+    HTTPResponseHeader header;
     std::string data;
     std::string raw;
 
@@ -43,4 +43,4 @@ public:
     void send(int fd);
 };
 
-#endif //WEBE_PACKET_H
+#endif //WEBE_HTTP_RESPONSE_H

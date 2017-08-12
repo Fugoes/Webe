@@ -1,4 +1,4 @@
-#include "packet.h"
+#include "http_response.h"
 #include "utils.h"
 #include <sstream>
 #include <iostream>
@@ -22,17 +22,17 @@ void HTTPResponse::send(int fd) {
     IF_NEGATIVE_EXIT(write(fd, this->raw.c_str(), this->raw.length()));
 }
 
-HTTPHeader::HTTPHeader() {}
+HTTPResponseHeader::HTTPResponseHeader() {}
 
-void HTTPHeader::append(std::string name, std::string value) {
+void HTTPResponseHeader::append(std::string name, std::string value) {
     this->header.push_back(std::make_tuple(name, value));
 }
 
-void HTTPHeader::set_status(std::string status_code) {
+void HTTPResponseHeader::set_status(std::string status_code) {
     this->status_code = status_code;
 }
 
-void HTTPHeader::parse() {
+void HTTPResponseHeader::parse() {
     this->raw = "HTTP/1.1 " + this->status_code + "\r\n";
     for (auto &&item : this->header) {
         this->raw += std::get<0>(item) + ": " + std::get<1>(item) + "\r\n";
@@ -40,7 +40,7 @@ void HTTPHeader::parse() {
     this->raw += "\r\n";
 }
 
-std::string HTTPHeader::date() {
+std::string HTTPResponseHeader::date() {
     char buf[128];
     time_t now = time(0);
     struct tm tm = *gmtime(&now);

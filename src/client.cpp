@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sys/epoll.h>
 #include "client.h"
-#include "packet.h"
+#include "http_response.h"
 #include "utils.h"
 
 extern "C" {
@@ -43,7 +43,7 @@ void Client::handle_in(Client *self) {
             r.data = "Hello World\r\n";
             r.header.set_status("200 OK");
             r.header.append("Server", "Webe/0.1");
-            r.header.append("Date", HTTPHeader::date());
+            r.header.append("Date", HTTPResponseHeader::date());
             r.header.append("Content-Type", "text/html");
             r.header.append("Connection", "Keep-Alive");
             r.parse();
