@@ -15,7 +15,7 @@ public:
     std::string version;
     std::map<std::string, std::string> header;
 
-    int parse(char *buf, int left, int right);
+    int parse(const char *buf, int left, int right);
 };
 
 class HTTPRequest {

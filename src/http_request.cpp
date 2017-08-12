@@ -47,27 +47,21 @@ HTTPRequestHeader::HTTPRequestHeader() {
 
 }
 
-int HTTPRequestHeader::parse(char *buf, int left, int right) {
+int HTTPRequestHeader::parse(const char *buf, int left, int right) {
     // GET /index.html HTTP/1.1
     // GET
     int begin, end;
     begin = left;
     end = get_word(buf, begin, begin + 7);
-    buf[end] = '\0';
-    this->method = std::string(buf + begin);
-    buf[end] = ' ';
+    this->method.assign(buf + begin, (unsigned long)(end - begin));
     // /index.html
     begin = end + 1;
     end = get_word(buf, begin, right);
-    buf[end] = '\0';
-    this->uri = std::string(buf + begin);
-    buf[end] = ' ';
+    this->uri.assign(buf + begin, (unsigned long)(end - begin));
     // HTTP/1.1
     begin = end + 1;
     end = get_word_CRLF(buf, begin, right);
-    buf[end] = '\0';
-    this->version = std::string(buf + begin);
-    buf[end] = '\r';
+    this->version.assign(buf + begin, (unsigned long)(end - begin));
     begin = end + 2;
     // Parse key -> value pair
     if (!(begin + 1 < right)) throw std::string("SyntaxError");
@@ -75,15 +69,11 @@ int HTTPRequestHeader::parse(char *buf, int left, int right) {
         // Key: Value
         // Key
         end = get_key(buf, begin, right);
-        buf[end] = '\0';
-        auto key = std::string(buf + begin);
-        buf[end] = ':';
+        auto key = std::string(buf + begin, (unsigned long)(end - begin));
         // Value
         begin = end + 2;
         end = get_word_CRLF(buf, begin, right);
-        buf[end] = '\0';
-        auto value = std::string(buf + begin);
-        buf[end] = '\r';
+        auto value = std::string(buf + begin, (unsigned long)(end - begin));
         // Add (Key, Value) to header
         this->header[key] = value;
         begin = end + 2;
@@ -109,7 +99,7 @@ void HTTPRequest::parse(int fd) {
     int end, content_len;
     try {
         end = this->header.parse(this->buf, 0, this->cursor);
-        content_len = string_to_int(this->header.header["Content-Length"]);
+        // content_len = string_to_int(this->header.header["Content-Length"]);
         this->get_data(this->buf, content_len, end, this->cursor);
     } catch (std::string err) {
     }
