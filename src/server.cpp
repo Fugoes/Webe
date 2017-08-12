@@ -15,16 +15,10 @@ extern "C" {
 #include <fcntl.h>
 }
 
-int Server::time_stamp = 0;
-
-Server::Server(const char *server_addr, uint16_t port_no) {
-    this->server_addr = std::string(server_addr);
-    this->port_no = port_no;
-}
-
-Server::Server(std::string server_addr, uint16_t port_no) {
+Server::Server(std::string server_addr, uint16_t port_no, uint64_t time_out /* = 60 */ ) {
     this->server_addr = server_addr;
     this->port_no = port_no;
+    this->time_out = time_out;
 }
 
 void Server::start() {
@@ -79,7 +73,7 @@ void Server::do_timer() {
 void handle_sig(int dunno) {
     switch (dunno) {
         case SIGUSR1:
-            printf("Alive %d\tNew %d\tDelete %d\n", Client::client_new - Client::client_delete,
+            printf("Alive %d\t\tNew %d\t\tDelete %d\n", Client::client_new - Client::client_delete,
                    Client::client_new, Client::client_delete);
             break;
         default:
@@ -101,6 +95,7 @@ void Server::event_loop(int max_events) {
 
     int nevent, i, j = 0;
     int client_sock;
+    uint64_t timer_buf;
     char ip_str[INET6_ADDRSTRLEN];
     struct sockaddr_in client_addr;
     socklen_t client_addrlen = sizeof(struct sockaddr_in);
@@ -124,15 +119,21 @@ void Server::event_loop(int max_events) {
                 IF_NEGATIVE_EXIT(epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, client_sock, &ev));
                 inet_ntop(AF_INET, &client_addr.sin_addr, ip_str, sizeof(ip_str));
                 this->fd_to_client[client_sock] = new Client(client_sock, std::string(ip_str), client_addr.sin_port);
+                this->fd_to_client[client_sock]->time_stamp = this->time_stamp;
             } else if (events[i].data.fd == this->timer_fd) {
                 // timer
-                uint64_t count;
-                IF_NEGATIVE_EXIT(read(this->timer_fd, &count, 8));
-                printf("Timer %" PRIu64 " \n", count);
+                IF_NEGATIVE_EXIT(read(this->timer_fd, &timer_buf, 8));
+                this->time_stamp += timer_buf;
+                printf("| Alive %8d | New %8d | Delete %8d |\n", Client::client_new - Client::client_delete,
+                       Client::client_new, Client::client_delete);
+                if (this->time_stamp % 5 == 0) {
+                    // clean dead connection
+                    this->clean_old_connections();
+                }
             } else {
                 switch (events[i].events) {
                     case EPOLLIN: // ready for read
-                        Client::handle_in(this->fd_to_client[events[i].data.fd]);
+                        Client::handle_in(this->fd_to_client[events[i].data.fd], this);
                         break;
                     default:
                         Client::handle_rdhup(this->fd_to_client[events[i].data.fd], this);
@@ -149,3 +150,13 @@ void Server::set_nonblocking(int fd) {
     IF_NEGATIVE_EXIT(fcntl(fd, F_SETFL, flag));
 }
 
+void Server::clean_old_connections() {
+    for (auto iter = this->fd_to_client.begin(); iter != this->fd_to_client.end();) {
+        if (this->time_stamp <= this->time_out) break;
+        uint64_t boundary = this->time_stamp - this->time_out;
+        if (std::get<1>(*iter)->time_stamp < boundary) {
+            delete std::get<1>(*iter);
+            iter = this->fd_to_client.erase(iter);
+        } else iter++;
+    }
+}

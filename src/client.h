@@ -17,15 +17,19 @@ public:
     static int client_new;
     static int client_delete;
 
-    static void handle_in(Client *self);
+    static void handle_in(Client *self, Server *server);
     static void handle_rdhup(Client *self, Server *server);
 
 private:
     std::string addr;
     uint16_t port_no;
 
+    uint64_t time_stamp;
+
     int fd;
     char buffer[CLIENT_BUFFER_SIZE];
+
+    friend class Server;
 };
 
 #endif //WEBE_CLIENT_H

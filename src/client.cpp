@@ -21,7 +21,18 @@ Client::Client(int fd, std::string addr, uint16_t port_no) {
     Client::client_new++;
 }
 
-void Client::handle_in(Client *self) {
+void Client::handle_rdhup(Client *self, Server *server) {
+    server->fd_to_client.erase(self->fd);
+    delete self;
+}
+
+Client::~Client() {
+    close(this->fd);
+    Client::client_delete++;
+}
+
+void Client::handle_in(Client *self, Server *server) {
+    self->time_stamp = server->time_stamp;
     ssize_t size;
     for (;;) {
         size = read(self->fd, self->buffer, CLIENT_BUFFER_SIZE - 1);
@@ -41,14 +52,4 @@ void Client::handle_in(Client *self) {
             IF_NEGATIVE_EXIT(-1);
         }
     }
-}
-
-void Client::handle_rdhup(Client *self, Server *server) {
-    server->fd_to_client.erase(self->fd);
-    delete self;
-}
-
-Client::~Client() {
-    close(this->fd);
-    Client::client_delete++;
 }
