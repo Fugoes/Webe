@@ -1,9 +1,11 @@
 #include "server.h"
 #include <cstring>
 #include <iostream>
+#include <signal.h>
 
 extern "C" {
 #include <sys/types.h>
+#include <sys/timerfd.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <netinet/in.h>
@@ -58,13 +60,26 @@ void Server::do_epoll() {
     IF_NEGATIVE_EXIT(this->epoll_fd);
 }
 
+void handle_sig(int dunno) {
+    switch (dunno) {
+        case SIGUSR1:
+            printf("Alive %d\tNew %d\tDelete %d\n", Client::client_new - Client::client_delete,
+                   Client::client_new, Client::client_delete);
+            break;
+        default:
+            IF_NEGATIVE_EXIT(-1);
+    }
+}
+
 void Server::event_loop(int max_events) {
     struct epoll_event ev, events[max_events];
     ev.events = EPOLLIN;
     ev.data.fd = this->server_sock;
     IF_NEGATIVE_EXIT(epoll_ctl(epoll_fd, EPOLL_CTL_ADD, this->server_sock, &ev));
 
-    int nevent, i, j;
+    signal(SIGUSR1, handle_sig);
+
+    int nevent, i;
     int client_sock;
     char ip_str[INET6_ADDRSTRLEN];
     struct sockaddr_in client_addr;
@@ -73,7 +88,7 @@ void Server::event_loop(int max_events) {
     for (;;) {
         nevent = epoll_wait(this->epoll_fd, events, max_events, -1);
         // std::cout << nevent << std::endl;
-        IF_NEGATIVE_EXIT(nevent);
+        IF_NEGATIVE_EXIT(nevent + 1);
         for (i = 0; i < nevent; i++) {
             if (events[i].data.fd == this->server_sock) {
                 // new client

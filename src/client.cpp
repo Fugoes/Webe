@@ -10,11 +10,15 @@ extern "C" {
 
 #define BUFFER_SIZE 65536
 
+int Client::client_new = 0;
+int Client::client_delete = 0;
+
 Client::Client(int fd, std::string addr, uint16_t port_no) {
     this->fd = fd;
     this->addr = addr;
     this->port_no = port_no;
-    printf("New Client %s:%u\n", addr.c_str(), port_no);
+    // printf("New Client %s:%u\n", addr.c_str(), port_no);
+    Client::client_new++;
 }
 
 void Client::handle_in(Client *self) {
@@ -40,10 +44,11 @@ void Client::handle_in(Client *self) {
 }
 
 void Client::handle_rdhup(Client *self) {
-    printf("Client %s:%u disconnect\n", self->addr.c_str(), self->port_no);
+    // printf("Client %s:%u disconnect\n", self->addr.c_str(), self->port_no);
     delete self;
 }
 
 Client::~Client() {
     close(this->fd);
+    Client::client_delete++;
 }

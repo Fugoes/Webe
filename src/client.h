@@ -10,6 +10,8 @@ class Client {
 public:
     Client(int fd, std::string addr, uint16_t port_no);
     ~Client();
+    static int client_new;
+    static int client_delete;
 
     static void handle_in(Client *self);
     static void handle_rdhup(Client *self);
@@ -21,6 +23,5 @@ private:
     int fd;
     char buffer[CLIENT_BUFFER_SIZE];
 };
-
 
 #endif //WEBE_CLIENT_H
