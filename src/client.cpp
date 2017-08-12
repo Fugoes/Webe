@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sys/epoll.h>
 #include "client.h"
 #include "packet.h"
 #include "utils.h"
@@ -13,26 +14,27 @@ extern "C" {
 int Client::client_new = 0;
 int Client::client_delete = 0;
 
-Client::Client(int fd, std::string addr, uint16_t port_no) {
+Client::Client(int fd, std::string addr, uint16_t port_no, Server *server) {
     this->fd = fd;
     this->addr = addr;
     this->port_no = port_no;
-    // printf("New Client %s:%u\n", addr.c_str(), port_no);
+    this->server = server;
     Client::client_new++;
 }
 
-void Client::handle_rdhup(Client *self, Server *server) {
-    server->fd_to_client.erase(self->fd);
+void Client::handle_rdhup(Client *self) {
     delete self;
 }
 
 Client::~Client() {
+    epoll_ctl(this->server->epoll_fd, EPOLL_CTL_DEL, this->fd, NULL);
+    this->server->fd_to_client.erase(this->fd);
     close(this->fd);
     Client::client_delete++;
 }
 
-void Client::handle_in(Client *self, Server *server) {
-    self->time_stamp = server->time_stamp;
+void Client::handle_in(Client *self) {
+    self->time_stamp = self->server->time_stamp;
     ssize_t size;
     for (;;) {
         size = read(self->fd, self->buffer, CLIENT_BUFFER_SIZE - 1);

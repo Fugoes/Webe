@@ -12,15 +12,16 @@ class Client;
 
 class Client {
 public:
-    Client(int fd, std::string addr, uint16_t port_no);
+    Client(int fd, std::string addr, uint16_t port_no, Server *server);
     ~Client();
     static int client_new;
     static int client_delete;
 
-    static void handle_in(Client *self, Server *server);
-    static void handle_rdhup(Client *self, Server *server);
+    static void handle_in(Client *self);
+    static void handle_rdhup(Client *self);
 
 private:
+    Server *server;
     std::string addr;
     uint16_t port_no;
 

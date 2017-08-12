@@ -118,7 +118,7 @@ void Server::event_loop(int max_events) {
                 ev.data.fd = client_sock;
                 IF_NEGATIVE_EXIT(epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, client_sock, &ev));
                 inet_ntop(AF_INET, &client_addr.sin_addr, ip_str, sizeof(ip_str));
-                this->fd_to_client[client_sock] = new Client(client_sock, std::string(ip_str), client_addr.sin_port);
+                this->fd_to_client[client_sock] = new Client(client_sock, std::string(ip_str), client_addr.sin_port, this);
                 this->fd_to_client[client_sock]->time_stamp = this->time_stamp;
             } else if (events[i].data.fd == this->timer_fd) {
                 // timer
@@ -133,10 +133,10 @@ void Server::event_loop(int max_events) {
             } else {
                 switch (events[i].events) {
                     case EPOLLIN: // ready for read
-                        Client::handle_in(this->fd_to_client[events[i].data.fd], this);
+                        Client::handle_in(this->fd_to_client[events[i].data.fd]);
                         break;
                     default:
-                        Client::handle_rdhup(this->fd_to_client[events[i].data.fd], this);
+                        Client::handle_rdhup(this->fd_to_client[events[i].data.fd]);
                         break;
                 }
             }
