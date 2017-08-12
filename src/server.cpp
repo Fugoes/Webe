@@ -1,5 +1,6 @@
 #include "server.h"
 #include <cstring>
+#include <cinttypes>
 #include <iostream>
 #include <signal.h>
 
@@ -31,6 +32,7 @@ void Server::start() {
     this->do_bind();
     this->do_listen();
     this->do_epoll();
+    this->do_timer();
     printf("Listen %s:%u\n", this->server_addr.c_str(), this->port_no);
     this->event_loop(1024);
 }
@@ -62,6 +64,18 @@ void Server::do_epoll() {
     IF_NEGATIVE_EXIT(this->epoll_fd);
 }
 
+void Server::do_timer() {
+    this->timer_fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
+    IF_NEGATIVE_EXIT(this->timer_fd);
+    struct itimerspec it;
+    IF_NEGATIVE_EXIT(clock_gettime(CLOCK_MONOTONIC, &it.it_value));
+    it.it_value.tv_sec = 1;
+    it.it_value.tv_nsec = 0;
+    it.it_interval.tv_sec = 1;
+    it.it_interval.tv_nsec = 0;
+    timerfd_settime(this->timer_fd, 0, &it, NULL);
+}
+
 void handle_sig(int dunno) {
     switch (dunno) {
         case SIGUSR1:
@@ -77,11 +91,15 @@ void Server::event_loop(int max_events) {
     struct epoll_event ev, events[max_events];
     ev.events = EPOLLIN;
     ev.data.fd = this->server_sock;
-    IF_NEGATIVE_EXIT(epoll_ctl(epoll_fd, EPOLL_CTL_ADD, this->server_sock, &ev));
+    IF_NEGATIVE_EXIT(epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, this->server_sock, &ev));
+
+    ev.events = EPOLLIN | EPOLLET;
+    ev.data.fd = this->timer_fd;
+    IF_NEGATIVE_EXIT(epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, this->timer_fd, &ev));
 
     signal(SIGUSR1, handle_sig);
 
-    int nevent, i;
+    int nevent, i, j = 0;
     int client_sock;
     char ip_str[INET6_ADDRSTRLEN];
     struct sockaddr_in client_addr;
@@ -106,6 +124,11 @@ void Server::event_loop(int max_events) {
                 IF_NEGATIVE_EXIT(epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, client_sock, &ev));
                 inet_ntop(AF_INET, &client_addr.sin_addr, ip_str, sizeof(ip_str));
                 this->fd_to_client[client_sock] = new Client(client_sock, std::string(ip_str), client_addr.sin_port);
+            } else if (events[i].data.fd == this->timer_fd) {
+                // timer
+                uint64_t count;
+                IF_NEGATIVE_EXIT(read(this->timer_fd, &count, 8));
+                printf("Timer %" PRIu64 " \n", count);
             } else {
                 switch (events[i].events) {
                     case EPOLLIN: // ready for read
@@ -125,3 +148,4 @@ void Server::set_nonblocking(int fd) {
     flag |= O_NONBLOCK;
     IF_NEGATIVE_EXIT(fcntl(fd, F_SETFL, flag));
 }
+

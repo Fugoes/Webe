@@ -26,6 +26,7 @@ private:
     uint16_t port_no;
     int server_sock;
     int epoll_fd;
+    int timer_fd;
     std::unordered_map<int, Client *> fd_to_client;
 
     void do_socket();
@@ -35,6 +36,8 @@ private:
     void do_listen();
 
     void do_epoll();
+
+    void do_timer();
 
     void event_loop(int max_events = 128);
 
