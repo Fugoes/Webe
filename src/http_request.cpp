@@ -164,6 +164,7 @@ bool HTTPRequest::parse() {
                     } else {
                         // Not Found
                         this->content = nullptr;
+                        this->status = WAITING_REQUEST_LINE;
                         return true;
                     }
                 }
@@ -177,6 +178,7 @@ bool HTTPRequest::parse() {
             }
             this->content_get += size;
             if (this->content_get == this->content_length)
+                this->status = WAITING_REQUEST_LINE;
                 return true;
             break;
         default:
