@@ -18,17 +18,25 @@ HTTPRequestBuffer::HTTPRequestBuffer(int fd) {
     this->left = 0;
 }
 
-void HTTPRequestBuffer::do_read() {
-    auto size = read(fd, this->buffer + this->right, buffer_size - this->right);
+int HTTPRequestBuffer::do_read() {
+    ssize_t size;
+    this->do_flush();
+    IF_FALSE_EXIT(this->left == 0);
     while (1) {
+        IF_FALSE_EXIT(this->right <= buffer_size);
+        if (this->right == buffer_size) {
+            return EBUSY;
+        }
+        size = read(fd, this->buffer + this->left, buffer_size - this->right);
         if (size > 0) {
             this->right += size;
         } else if (errno == EAGAIN) {
-            break;
+            return EAGAIN;
         } else {
             IF_NEGATIVE_EXIT(-1);
         }
     }
+    return 0;
 }
 
 std::tuple<const char *, size_t> HTTPRequestBuffer::get_line() {
@@ -76,3 +84,5 @@ std::tuple<const char *, size_t> HTTPRequestBuffer::get(size_t size) {
 HTTPRequest::HTTPRequest(int fd) : buffer(fd) {
 
 }
+
+

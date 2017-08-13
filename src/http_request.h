@@ -11,7 +11,7 @@ public:
     HTTPRequestBuffer(int fd);
     std::tuple<const char *, size_t> get_line();
     std::tuple<const char *, size_t> get(size_t size);
-    void do_read();
+    int do_read();
     void do_flush();
     void do_clean();
 
