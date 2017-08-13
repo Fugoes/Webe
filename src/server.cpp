@@ -153,19 +153,15 @@ void Server::set_nonblocking(int fd) {
 }
 
 void Server::clean_old_connections() {
-    std::forward_list<std::unordered_map<int, Client *>::iterator> to_delete;
-    std::cout << this->fd_to_client.size() << " ";
-    auto boundary = this->time_stamp - 5;
+    if (this->time_stamp <= this->time_out)
+        return;
+    auto boundary = this->time_stamp - this->time_out;
+    Client *c;
     for (auto iter = this->fd_to_client.begin(); iter != this->fd_to_client.end();) {
-        if (this->time_stamp <= this->time_out) break;
-        if (std::get<1>(*iter)->time_stamp < boundary) {
-            to_delete.push_front(iter);
-        }
+        c = std::get<1>(*iter);
+        if (c->time_stamp < boundary) {
+            iter = this->fd_to_client.erase(iter);
+            delete c;
+        } else ++iter;
     }
-    for (auto && s : to_delete) {
-        auto tmp = std::get<1>(*s);
-        this->fd_to_client.erase(s);
-        delete tmp;
-    }
-    std::cout << this->fd_to_client.size() << "\n";
 }
