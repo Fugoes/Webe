@@ -15,13 +15,19 @@ enum HTTPRequestError {
 class HTTPRequestBuffer {
 public:
     HTTPRequestBuffer(int fd);
+
     std::tuple<const char *, size_t> get_line();
+
     std::tuple<const char *, size_t> get(size_t size);
+
     int do_read();
+
     void do_flush();
+
     void do_clean();
 
     static size_t get_word(const char *s, size_t left, size_t right);
+
     static size_t get_key(const char *s, size_t left, size_t right);
 
     char buffer[buffer_size];

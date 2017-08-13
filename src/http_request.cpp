@@ -105,7 +105,7 @@ HTTPRequest::HTTPRequest(int fd) : buffer(fd) {
 }
 
 bool HTTPRequest::parse() {
-    const char * begin;
+    const char *begin;
     size_t size;
     size_t left, right;
     switch (this->status) {
@@ -151,7 +151,7 @@ bool HTTPRequest::parse() {
                     left = 0;
                     right = HTTPRequestBuffer::get_key(begin, left, size);
                     if (right != 0) {
-                        this->header[ std::string(begin + left, right - left) ]
+                        this->header[std::string(begin + left, right - left)]
                                 = std::string(begin + right + 2, size - right - 2);
                     } else throw INVALID_HEADER;
                 } else {
@@ -179,7 +179,7 @@ bool HTTPRequest::parse() {
             this->content_get += size;
             if (this->content_get == this->content_length)
                 this->status = WAITING_REQUEST_LINE;
-                return true;
+            return true;
             break;
         default:
             IF_FALSE_EXIT(false);
@@ -196,7 +196,7 @@ void HTTPRequest::new_content(size_t size) {
 std::string HTTPRequest::str() {
     std::string result("");
     result += this->method + " " + this->uri + " " + this->version + "\n";
-    for (auto && i : this->header) {
+    for (auto &&i : this->header) {
         result += i.first + ": " + i.second + "\n";
     }
     result += "\n";
