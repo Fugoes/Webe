@@ -47,6 +47,8 @@ public:
 
     void new_content(size_t size);
 
+    std::string str();
+
     HTTPRequestBuffer buffer;
     enum {
         WAITING_REQUEST_LINE,

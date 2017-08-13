@@ -15,22 +15,18 @@ int main(int argc, char *argv[]) {
             "BLa: sdfadfsadf\r\n"
             "\r\n"
             "Hello World!";
-    HTTPRequestBuffer b(0);
+    HTTPRequest hr(0);
     for (auto i = 0; i < sizeof(s) - 1; i++) {
-        b.buffer[i] = s[i];
+        hr.buffer.buffer[i] = s[i];
     }
-    b.left = 0;
-    b.right = sizeof(s) - 1;
+    hr.buffer.left = 0;
+    hr.buffer.right = sizeof(s) - 1;
 
-    const char *a;
-    size_t size;
-    std::string str;
-
-    for (auto j = 0; j < 9; j++) {
-        std::tie(a, size) = b.get_line();
-        str.assign(a, size);
-        std::cout << str << "$\n";
+    if (hr.parse()) {
+        std::cout << "true\n";
+        std::cout << hr.str();
     }
+
     /*
     uint16_t port_no = 8080;
     std::string address = "0.0.0.0";

@@ -126,7 +126,7 @@ bool HTTPRequest::parse() {
                 this->method.assign(begin + left, right - left);
             } else throw INVALID_REQUEST_LINE;
             left = right + 1;
-            right = HTTPRequestBuffer::get_word(begin, 0, size);
+            right = HTTPRequestBuffer::get_word(begin, left, size);
             if (right != 0) {
                 this->uri.assign(begin + left, right - left);
             } else throw INVALID_REQUEST_LINE;
@@ -189,4 +189,15 @@ void HTTPRequest::new_content(size_t size) {
         delete this->content;
     }
     this->content = new char[size];
+}
+
+std::string HTTPRequest::str() {
+    std::string result("");
+    result += this->method + " " + this->uri + " " + this->version + "\n";
+    for (auto && i : this->header) {
+        result += i.first + ": " + i.second + "\n";
+    }
+    result += "\n";
+    result += std::string(this->content, this->content_length);
+    return result;
 }
