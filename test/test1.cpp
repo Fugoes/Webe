@@ -2,6 +2,7 @@
 #include "../src/http_request.h"
 #include <string>
 #include <cstdint>
+#include <fcntl.h>
 #include "../src/server.h"
 
 int main(int argc, char *argv[]) {

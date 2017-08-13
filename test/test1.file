@@ -1,0 +1,20 @@
+GET / HTTP/1.1
+Host: test test
+User-Agent: python-requests/2.18.1
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Accept: */*
+Content-Length: 12
+BLa: sdfadfsadf
+
+Hello World!
+GET / HTTP/1.1
+Host: test test
+User-Agent: python-requests/2.18.1
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Accept: */*
+Content-Length: 12
+BLa: sdfadfsadf
+
+Hello World.

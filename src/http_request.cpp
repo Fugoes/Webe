@@ -38,6 +38,7 @@ int HTTPRequestBuffer::do_read() {
             IF_NEGATIVE_EXIT(-1);
         }
     }
+    IF_NEGATIVE_EXIT(-1);
     return 0;
 }
 
@@ -65,8 +66,8 @@ void HTTPRequestBuffer::do_flush() {
         return;
     }
     memmove(this->buffer, this->buffer + this->left, this->right - this->left);
-    this->left = 0;
     this->right = this->right - this->left;
+    this->left = 0;
 }
 
 void HTTPRequestBuffer::do_clean() {
@@ -117,6 +118,7 @@ bool HTTPRequest::parse() {
     const char *begin;
     size_t size;
     size_t left, right;
+    IF_FALSE_EXIT(this->status == WAITING_REQUEST_LINE || this->status == WAITING_HEADER || this->status == WAITING_CONTENT);
     switch (this->status) {
         case WAITING_REQUEST_LINE:
             try {
@@ -212,7 +214,9 @@ std::string HTTPRequest::str() {
         result += i.first + ": " + i.second + "\n";
     }
     result += "\n";
-    result += std::string(this->content, this->content_length);
+    if (this->content != nullptr) {
+        result += std::string(this->content, this->content_length);
+    }
     return result;
 }
 

@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 
-const int buffer_size = 65536;
+const int buffer_size = 512;
 
 enum HTTPRequestError {
     GET_LINE_FAILED,
