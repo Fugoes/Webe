@@ -73,3 +73,6 @@ std::tuple<const char *, size_t> HTTPRequestBuffer::get(size_t size) {
     }
 }
 
+HTTPRequest::HTTPRequest(int fd) : buffer(fd) {
+
+}
