@@ -203,3 +203,9 @@ std::string HTTPRequest::str() {
     result += std::string(this->content, this->content_length);
     return result;
 }
+
+HTTPRequest::~HTTPRequest() {
+    if (this->content != nullptr) {
+        delete this->content;
+    }
+}

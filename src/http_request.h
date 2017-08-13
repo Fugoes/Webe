@@ -48,6 +48,7 @@ public:
     size_t content_length;
 
     HTTPRequest(int fd);
+    ~HTTPRequest();
 
     bool parse();
 
