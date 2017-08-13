@@ -1,4 +1,4 @@
-#include "../src/buffer.h"
+#include "../src/read_buffer.h"
 #include <fcntl.h>
 #include <iostream>
 #include <string>
@@ -6,7 +6,7 @@
 
 int main() {
     auto file = open("/tmp/fifo", O_RDONLY | O_NONBLOCK);
-    Buffer b(file);
+    ReadBuffer b(file);
     const char *c;
     ssize_t size;
     int i = 0;

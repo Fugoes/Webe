@@ -1,4 +1,4 @@
-#include "buffer.h"
+#include "read_buffer.h"
 #include "utils.h"
 
 extern "C" {
@@ -6,17 +6,17 @@ extern "C" {
 #include <unistd.h>
 }
 
-Buffer::Buffer(int fd) {
+ReadBuffer::ReadBuffer(int fd) {
     this->fd = fd;
     this->left = 0;
     this->right = 0;
 }
 
-std::tuple<const char *, ssize_t> Buffer::get_line() {
+std::tuple<const char *, ssize_t> ReadBuffer::get_line() {
     ssize_t i;
     for (i = this->left; i + 1 < this->right; i++) {
-        if (this->buf[i] == '\r' && this->buf[i + 1] == '\n') {
-            auto result = std::make_tuple(this->buf + this->left, i - this->left);
+        if (this->buffer[i] == '\r' && this->buffer[i + 1] == '\n') {
+            auto result = std::make_tuple(this->buffer + this->left, i - this->left);
             this->left = i + 2;
             return result;
         }
@@ -24,14 +24,14 @@ std::tuple<const char *, ssize_t> Buffer::get_line() {
     return std::make_pair(nullptr, 0);
 }
 
-int Buffer::do_read() {
+int ReadBuffer::do_read() {
     IF_FALSE_EXIT(left <= right);
     ssize_t size;
     while (1) {
         if (this->right == buffer_size) {
             return EBUSY;
         }
-        size = read(this->fd, this->buf + this->right, (buffer_size - this->right) * sizeof(char));
+        size = read(this->fd, this->buffer + this->right, (buffer_size - this->right) * sizeof(char));
         if (size > 0) {
             this->right += size;
         } else if (errno == EAGAIN) {
@@ -44,7 +44,7 @@ int Buffer::do_read() {
     }
 }
 
-void Buffer::do_move() {
+void ReadBuffer::do_move() {
     IF_FALSE_EXIT(left <= right);
     if (this->left == this->right) {
         this->left = 0;
@@ -54,29 +54,29 @@ void Buffer::do_move() {
     if (this->left == 0) {
         return;
     }
-    memmove(this->buf, this->buf + this->left, (this->right - this->left) * sizeof(char));
+    memmove(this->buffer, this->buffer + this->left, (this->right - this->left) * sizeof(char));
     this->right -= this->left;
     this->left = 0;
 }
 
-void Buffer::do_flush() {
+void ReadBuffer::do_flush() {
     this->left = 0;
     this->right = 0;
     return;
 }
 
-std::tuple<const char *, ssize_t> Buffer::get_chars(ssize_t n) {
+std::tuple<const char *, ssize_t> ReadBuffer::get_chars(ssize_t n) {
     IF_FALSE_EXIT(n > 0);
     if (this->right == this->left) {
         return std::make_tuple(nullptr, 0);
     }
     if (this->right - this->left <= n) {
-        auto result = std::make_tuple(this->buf + this->left, this->right - this->left);
+        auto result = std::make_tuple(this->buffer + this->left, this->right - this->left);
         this->left = 0;
         this->right = 0;
         return result;
     } else {
-        auto result = std::make_tuple(this->buf + this->left, n);
+        auto result = std::make_tuple(this->buffer + this->left, n);
         this->left += n;
         return result;
     }

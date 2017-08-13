@@ -7,9 +7,9 @@
 
 const int buffer_size = 30;
 
-class Buffer {
+class ReadBuffer {
 public:
-    Buffer(int fd);
+    ReadBuffer(int fd);
 
     /**
      * get a line by \r\n
@@ -45,7 +45,7 @@ public:
      */
     void do_flush();
 
-    char buf[buffer_size];
+    char buffer[buffer_size];
     ssize_t left, right;
 
     int fd;
