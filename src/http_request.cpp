@@ -47,7 +47,7 @@ std::tuple<const char *, size_t> HTTPRequestBuffer::get_line() {
             return result;
         }
     }
-    throw std::string("GetLine");
+    throw GET_LINE_FAILED;
 }
 
 void HTTPRequestBuffer::do_flush() {
@@ -81,8 +81,112 @@ std::tuple<const char *, size_t> HTTPRequestBuffer::get(size_t size) {
     }
 }
 
-HTTPRequest::HTTPRequest(int fd) : buffer(fd) {
-
+size_t HTTPRequestBuffer::get_word(const char *s, size_t left, size_t right) {
+    for (size_t i = left; i < right; i++) {
+        if (s[i] == ' ') {
+            return i;
+        }
+    }
+    return 0;
 }
 
+size_t HTTPRequestBuffer::get_key(const char *s, size_t left, size_t right) {
+    for (size_t i = left; i < right - 1; i++) {
+        if (s[i] == ':' && s[i + 1] == ' ') {
+            return i;
+        }
+    }
+    return 0;
+}
 
+HTTPRequest::HTTPRequest(int fd) : buffer(fd) {
+    this->status = WAITING_REQUEST_LINE;
+    this->content = nullptr;
+}
+
+bool HTTPRequest::parse() {
+    const char * begin;
+    size_t size;
+    size_t left, right;
+    switch (this->status) {
+        case WAITING_REQUEST_LINE:
+            try {
+                std::tie(begin, size) = this->buffer.get_line();
+            } catch (HTTPRequestError e) {
+                switch (e) {
+                    case GET_LINE_FAILED:
+                        return false;
+                    default:
+                        IF_FALSE_EXIT(false);
+                }
+            }
+            left = 0;
+            right = HTTPRequestBuffer::get_word(begin, 0, size);
+            if (right != 0) {
+                this->method.assign(begin + left, right - left);
+            } else throw INVALID_REQUEST_LINE;
+            left = right + 1;
+            right = HTTPRequestBuffer::get_word(begin, 0, size);
+            if (right != 0) {
+                this->uri.assign(begin + left, right - left);
+            } else throw INVALID_REQUEST_LINE;
+            left = right + 1;
+            right = size;
+            if (left >= right) throw INVALID_REQUEST_LINE;
+            this->version.assign(begin + left, right - left);
+            this->status = WAITING_HEADER;
+        case WAITING_HEADER:
+            while (1) {
+                try {
+                    std::tie(begin, size) = this->buffer.get_line();
+                } catch (HTTPRequestError e) {
+                    switch (e) {
+                        case GET_LINE_FAILED:
+                            return false;
+                        default:
+                            IF_FALSE_EXIT(false);
+                    }
+                }
+                if (size != 0) {
+                    left = 0;
+                    right = HTTPRequestBuffer::get_key(begin, left, size);
+                    if (right != 0) {
+                        this->header[ std::string(begin + left, right - left) ]
+                                = std::string(begin + right + 2, size - right - 2);
+                    } else throw INVALID_HEADER;
+                } else {
+                    if (this->header.find("Content-Length") != this->header.end()) {
+                        // Found
+                        this->content_length = string_to_size_t(this->header["Content-Length"]);
+                        this->content_get = 0;
+                        this->new_content(this->content_length);
+                        break;
+                    } else {
+                        // Not Found
+                        this->content = nullptr;
+                        return true;
+                    }
+                }
+            }
+            this->status = WAITING_CONTENT;
+        case WAITING_CONTENT:
+            IF_FALSE_EXIT(this->content_get <= this->content_length);
+            std::tie(begin, size) = this->buffer.get(this->content_length - this->content_get);
+            if (size != 0) {
+                memcpy(this->content + this->content_get, begin, size);
+            }
+            this->content_get += size;
+            if (this->content_get == this->content_length)
+                return true;
+            break;
+        default:
+            IF_FALSE_EXIT(false);
+    }
+}
+
+void HTTPRequest::new_content(size_t size) {
+    if (this->content != nullptr) {
+        delete this->content;
+    }
+    this->content = new char[size];
+}
