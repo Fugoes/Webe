@@ -28,6 +28,8 @@ private:
     uint64_t time_stamp;
     int fd;
 
+    HTTPRequest request;
+
     friend class Server;
 };
 

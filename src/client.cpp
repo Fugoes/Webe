@@ -9,12 +9,10 @@ extern "C" {
 #include <errno.h>
 }
 
-#define BUFFER_SIZE 65536
-
 int Client::client_new = 0;
 int Client::client_delete = 0;
 
-Client::Client(int fd, std::string addr, uint16_t port_no, Server *server) {
+Client::Client(int fd, std::string addr, uint16_t port_no, Server *server) : request(fd) {
     this->fd = fd;
     this->addr = addr;
     this->port_no = port_no;
@@ -35,23 +33,11 @@ Client::~Client() {
 
 void Client::handle_in(Client *self) {
     self->time_stamp = self->server->time_stamp;
-    ssize_t size;
-    for (;;) {
-        size = read(self->fd, self->buffer, CLIENT_BUFFER_SIZE - 1);
-        if (size > 0) {
-            HTTPResponse r;
-            r.data = "Hello World\r\n";
-            r.header.set_status("200 OK");
-            r.header.append("Server", "Webe/0.1");
-            r.header.append("Date", HTTPResponseHeader::date());
-            r.header.append("Content-Type", "text/html");
-            r.header.append("Connection", "Keep-Alive");
-            r.parse();
-            r.send(self->fd);
-        } else if (errno == EAGAIN) {
-            break;
-        } else {
-            IF_NEGATIVE_EXIT(-1);
-        }
+    while (self->request.buffer.do_read() != EAGAIN);
+    while (self->request.parse()) {
+        std::cout << "--->\n";
+        std::cout << self->request.str() << std::endl;
+        std::cout << "<---\n";
+        self->request.do_clean();
     }
 }

@@ -22,12 +22,14 @@ int HTTPRequestBuffer::do_read() {
     ssize_t size;
     this->do_flush();
     IF_FALSE_EXIT(this->left == 0);
+    IF_FALSE_EXIT(this->left <= this->right);
     while (1) {
         IF_FALSE_EXIT(this->right <= buffer_size);
         if (this->right == buffer_size) {
             return EBUSY;
         }
-        size = read(fd, this->buffer + this->left, buffer_size - this->right);
+        IF_FALSE_EXIT(buffer_size > this->right);
+        size = read(fd, this->buffer + this->right, buffer_size - this->right);
         if (size > 0) {
             this->right += size;
         } else if (errno == EAGAIN) {
@@ -40,8 +42,10 @@ int HTTPRequestBuffer::do_read() {
 }
 
 std::tuple<const char *, size_t> HTTPRequestBuffer::get_line() {
-    for (auto i = this->left; i < this->right - 1; i++) {
+    IF_FALSE_EXIT(this->left <= this->right);
+    for (auto i = this->left; i + 1 < this->right; i++) {
         if (this->buffer[i] == '\r' && this->buffer[i + 1] == '\n') {
+            IF_FALSE_EXIT(i >= this->left);
             auto result = std::make_tuple(this->buffer + this->left, i - this->left);
             this->left = i + 2;
             return result;
@@ -51,6 +55,7 @@ std::tuple<const char *, size_t> HTTPRequestBuffer::get_line() {
 }
 
 void HTTPRequestBuffer::do_flush() {
+    IF_FALSE_EXIT(this->left <= this->right);
     if (this->left == 0) {
         return;
     }
@@ -60,15 +65,19 @@ void HTTPRequestBuffer::do_flush() {
         return;
     }
     memmove(this->buffer, this->buffer + this->left, this->right - this->left);
+    this->left = 0;
+    this->right = this->right - this->left;
 }
 
 void HTTPRequestBuffer::do_clean() {
+    IF_FALSE_EXIT(this->left < this->right);
     this->left = 0;
     this->right = 0;
 }
 
 std::tuple<const char *, size_t> HTTPRequestBuffer::get(size_t size) {
     IF_FALSE_EXIT(size > 0);
+    IF_FALSE_EXIT(this->left <= this->right)
     if (this->right - this->left <= size) {
         auto result = std::make_tuple(this->buffer + this->left, this->right - this->left);
         this->left = 0;
@@ -91,7 +100,7 @@ size_t HTTPRequestBuffer::get_word(const char *s, size_t left, size_t right) {
 }
 
 size_t HTTPRequestBuffer::get_key(const char *s, size_t left, size_t right) {
-    for (size_t i = left; i < right - 1; i++) {
+    for (size_t i = left; i + 1 < right; i++) {
         if (s[i] == ':' && s[i + 1] == ' ') {
             return i;
         }
@@ -122,16 +131,19 @@ bool HTTPRequest::parse() {
             }
             left = 0;
             right = HTTPRequestBuffer::get_word(begin, 0, size);
+            IF_FALSE_EXIT(left <= right);
             if (right != 0) {
                 this->method.assign(begin + left, right - left);
             } else throw INVALID_REQUEST_LINE;
             left = right + 1;
             right = HTTPRequestBuffer::get_word(begin, left, size);
+            IF_FALSE_EXIT(left <= right);
             if (right != 0) {
                 this->uri.assign(begin + left, right - left);
             } else throw INVALID_REQUEST_LINE;
             left = right + 1;
             right = size;
+            IF_FALSE_EXIT(left <= right);
             if (left >= right) throw INVALID_REQUEST_LINE;
             this->version.assign(begin + left, right - left);
             this->status = WAITING_HEADER;
@@ -151,6 +163,7 @@ bool HTTPRequest::parse() {
                     left = 0;
                     right = HTTPRequestBuffer::get_key(begin, left, size);
                     if (right != 0) {
+                        IF_FALSE_EXIT(left <= right);
                         this->header[std::string(begin + left, right - left)]
                                 = std::string(begin + right + 2, size - right - 2);
                     } else throw INVALID_HEADER;
@@ -180,7 +193,6 @@ bool HTTPRequest::parse() {
             if (this->content_get == this->content_length)
                 this->status = WAITING_REQUEST_LINE;
             return true;
-            break;
         default:
             IF_FALSE_EXIT(false);
     }
@@ -216,5 +228,5 @@ void HTTPRequest::do_clean() {
         this->content = nullptr;
     }
     this->status = WAITING_REQUEST_LINE;
-    this->buffer.do_clean();
+    this->buffer.do_flush();
 }
