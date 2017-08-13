@@ -6,6 +6,22 @@
 
 const int buffer_size = 65536;
 
+class HTTPRequestBuffer {
+public:
+    HTTPRequestBuffer(int fd);
+    void do_read();
+    std::tuple<const char *, size_t> get_word();
+    std::tuple<const char *, size_t> get_till_CRLF();
+    std::tuple<const char *, size_t> get_line();
+
+// private:
+    char buffer[buffer_size];
+    // [left, right) are unused buffer
+    size_t left;
+    size_t right;
+    int fd;
+};
+
 class HTTPRequestHeader {
 public:
     HTTPRequestHeader();
@@ -23,17 +39,18 @@ public:
     HTTPRequest();
 
     void parse(int fd);
-    void get_content();
 
 // private:
     HTTPRequestHeader header;
+    char *content;
+    size_t content_length;
+
+    bool waiting_header;
+
+    size_t content_written;
 
     char buffer[buffer_size];
     size_t cursor;
-
-    char *content;
-    size_t content_written;
-    size_t content_length;
 };
 
 

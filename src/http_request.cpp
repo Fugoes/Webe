@@ -42,6 +42,7 @@ size_t string_to_size_t(std::string str) {
 HTTPRequest::HTTPRequest() {
     this->cursor = 0;
     this->content = nullptr;
+    this->waiting_header = true;
 }
 
 HTTPRequestHeader::HTTPRequestHeader() {
@@ -85,40 +86,82 @@ size_t HTTPRequestHeader::parse(const char *buffer, size_t size) {
 void HTTPRequest::parse(int fd) {
     ssize_t size;
     // Read until EAGAIN
-    for (;;) {
-        size = read(fd, this->buffer + this->cursor, buffer_size - this->cursor);
+    // try to parse header
+    if (this->waiting_header) {
+        auto begin = this->header.parse(this->buffer, this->cursor);
+        IF_FALSE_EXIT(begin <= this->cursor);
+        if (this->header.header.find("Content-Length") != this->header.header.end()) {
+            // Found
+            this->content_length = string_to_size_t(this->header.header["Content-Length"]);
+            IF_FALSE_EXIT(this->content == nullptr);
+            this->content = new char[this->content_length];
+            // Copy content
+            if (begin == this->cursor) {
+                this->content_written = 0;
+                this->cursor = 0;
+                this->waiting_header = false;
+                return;
+            } else if (begin < this->cursor) {
+                this->content_written = this->cursor - begin;
+                memcpy(this->content, this->buffer + begin, this->content_written);
+                this->cursor = 0;
+                return;
+            }
+        } else {
+        }
+    } else {
+        // waiting for content
+    }
+}
+
+HTTPRequestBuffer::HTTPRequestBuffer(int fd) {
+    this->fd = fd;
+    this->right = 0;
+    this->left = 0;
+}
+
+void HTTPRequestBuffer::do_read() {
+    auto size = read(fd, this->buffer + this->right, buffer_size - this->right);
+    while (1) {
         if (size > 0) {
-            this->cursor += size;
+            this->right += size;
         } else if (errno == EAGAIN) {
             break;
         } else {
             IF_NEGATIVE_EXIT(-1);
         }
     }
-    // try to parse header
 }
 
-void HTTPRequest::get_content() {
-    size_t begin = this->header.parse(this->buffer, this->cursor);
-    if (this->header.header.find("Content-Length") != this->header.header.end()) {
-        // Found
-        this->content_length = string_to_size_t(this->header.header["Content-Length"]);
-        this->content = new char[this->content_length];
-        if (begin == this->cursor) {
-            this->content_written = 0;
-            this->cursor = 0;
-            return;
-        } else if (begin < this->cursor) {
-            this->content_written = this->cursor - begin;
-            memcpy(this->content, this->buffer + begin, this->content_written);
-            this->cursor = 0;
-            return;
-        } else {
-            IF_NEGATIVE_EXIT(-1);
+std::tuple<const char *, size_t> HTTPRequestBuffer::get_word() {
+    for (auto i = this->left; i < this->right; i++) {
+        if (this->buffer[i] == ' ') {
+            auto result = std::make_tuple(this->buffer + this->left, i - this->left);
+            this->left = i + 1;
+            return result;
         }
-    } else {
-        // Not Found
-        this->content = nullptr;
-        return;
     }
+    throw std::string("GetWord");
+}
+
+std::tuple<const char *, size_t> HTTPRequestBuffer::get_till_CRLF() {
+    for (auto i = this->left; i < this->right - 1; i++) {
+        if (this->buffer[i] == '\r' && this->buffer[i + 1] == '\n') {
+            auto result = std::make_tuple(this->buffer + this->left, i - this->left);
+            this->left = i + 2;
+            return result;
+        }
+    }
+    throw std::string("GetTillCRLF");
+}
+
+std::tuple<const char *, size_t> HTTPRequestBuffer::get_line() {
+    for (auto i = this->left; i < this->right - 1; i++) {
+        if (this->buffer[i] == '\r' && this->buffer[i + 1] == '\n') {
+            auto result = std::make_tuple(this->buffer + this->left, i - this->left);
+            this->left = i + 2;
+            return result;
+        }
+    }
+    throw std::string("GetLine");
 }

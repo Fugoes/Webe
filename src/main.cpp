@@ -5,8 +5,6 @@
 #include "server.h"
 
 int main(int argc, char *argv[]) {
-    HTTPRequest r;
-    HTTPRequestHeader b;
     char s[] = "GET / HTTP/1.1\r\n"
             "Host: test test\r\n"
             "User-Agent: python-requests/2.18.1\r\n"
@@ -17,24 +15,21 @@ int main(int argc, char *argv[]) {
             "BLa: sdfadfsadf\r\n"
             "\r\n"
             "Hello World!";
-    for (int i = 0; i < sizeof(s); i++) {
-        r.buffer[i] = s[i];
+    HTTPRequestBuffer b(0);
+    for (auto i = 0; i < sizeof(s) - 1; i++) {
+        b.buffer[i] = s[i];
     }
-    r.cursor = sizeof(s) - 1;
-    r.get_content();
-    for (int i = 0; i < r.content_length; i++) {
-        putchar(r.content[i]);
-    }
-    std::cout << "$" << std::endl;
-    b.parse(s, sizeof(s) - 1);
-    std::cout << b.method << " " << b.uri << " " << b.version << std::endl;
-    for (auto && item : b.header) {
-        std::cout << item.first << ": " << item.second << std::endl;
-    }
-    if (b.header.find("Content-Length") == b.header.end()) {
-        std::cout << "Not found\n";
-    } else {
-        std::cout << b.header["Content-Length"] << std::endl;
+    b.left = 0;
+    b.right = sizeof(s) - 1;
+
+    const char *a;
+    size_t size;
+    std::string str;
+
+    for (auto j = 0; j < 9; j++) {
+        std::tie(a, size) = b.get_line();
+        str.assign(a, size);
+        std::cout << str << "$\n";
     }
     /*
     uint16_t port_no = 8080;
