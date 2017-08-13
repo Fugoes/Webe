@@ -6,9 +6,7 @@
 class Client;
 
 #include "server.h"
-
-#define CLIENT_BUFFER_SIZE 65536
-
+#include "http_request.h"
 
 class Client {
 public:
@@ -29,7 +27,6 @@ private:
     uint16_t port_no;
     uint64_t time_stamp;
     int fd;
-    char buffer[CLIENT_BUFFER_SIZE];
 
     friend class Server;
 };

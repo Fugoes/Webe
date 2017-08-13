@@ -49,6 +49,7 @@ public:
 
     HTTPRequest(int fd);
     ~HTTPRequest();
+    void do_clean();
 
     bool parse();
 

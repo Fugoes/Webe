@@ -209,3 +209,12 @@ HTTPRequest::~HTTPRequest() {
         delete this->content;
     }
 }
+
+void HTTPRequest::do_clean() {
+    if (this->content != nullptr) {
+        delete this->content;
+        this->content = nullptr;
+    }
+    this->status = WAITING_REQUEST_LINE;
+    this->buffer.do_clean();
+}
