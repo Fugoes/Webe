@@ -34,7 +34,6 @@ void Server::start() {
 
 void Server::do_socket() {
     int enable = 1;
-    struct sockaddr_in server_sockaddr;
     this->server_sock = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     IF_NEGATIVE_EXIT(this->server_sock);
     IF_NEGATIVE_EXIT(setsockopt(this->server_sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)));
@@ -94,12 +93,12 @@ void Server::event_loop(int max_events) {
 
     signal(SIGUSR1, handle_sig);
 
-    int nevent, i, j = 0;
+    int nevent, i;
     int client_sock;
     uint64_t timer_buf;
     char ip_str[INET6_ADDRSTRLEN];
     struct sockaddr_in client_addr;
-    socklen_t client_addrlen = sizeof(struct sockaddr_in);
+    socklen_t client_addrlen;
     // event loop
     for (;;) {
         nevent = epoll_wait(this->epoll_fd, events, max_events, -1);
