@@ -5,6 +5,7 @@
 #include "server.h"
 
 int main(int argc, char *argv[]) {
+    HTTPRequest r;
     HTTPRequestHeader b;
     char s[] = "GET / HTTP/1.1\r\n"
             "Host: test test\r\n"
@@ -13,12 +14,27 @@ int main(int argc, char *argv[]) {
             "Connection: keep-alive\r\n"
             "Accept: */*\r\n"
             "Content-Length: 12\r\n"
+            "BLa: sdfadfsadf\r\n"
             "\r\n"
             "Hello World!";
+    for (int i = 0; i < sizeof(s); i++) {
+        r.buffer[i] = s[i];
+    }
+    r.cursor = sizeof(s) - 1;
+    r.get_content();
+    for (int i = 0; i < r.content_length; i++) {
+        putchar(r.content[i]);
+    }
+    std::cout << "$" << std::endl;
     b.parse(s, sizeof(s) - 1);
     std::cout << b.method << " " << b.uri << " " << b.version << std::endl;
     for (auto && item : b.header) {
         std::cout << item.first << ": " << item.second << std::endl;
+    }
+    if (b.header.find("Content-Length") == b.header.end()) {
+        std::cout << "Not found\n";
+    } else {
+        std::cout << b.header["Content-Length"] << std::endl;
     }
     /*
     uint16_t port_no = 8080;

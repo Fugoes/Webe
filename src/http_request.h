@@ -15,7 +15,7 @@ public:
     std::string version;
     std::map<std::string, std::string> header;
 
-    ssize_t parse(const char *buffer, size_t size);
+    size_t parse(const char *buffer, size_t size);
 };
 
 class HTTPRequest {
@@ -23,16 +23,17 @@ public:
     HTTPRequest();
 
     void parse(int fd);
+    void get_content();
 
-private:
+// private:
     HTTPRequestHeader header;
 
     char buffer[buffer_size];
-    int cursor;
+    size_t cursor;
 
-    char *data;
-
-    void get_data(char *buf, int content_len, int left, int right);
+    char *content;
+    size_t content_written;
+    size_t content_length;
 };
 
 

@@ -4,8 +4,6 @@
 #include <cstring>
 #include "utils.h"
 
-#define BUFFER_SIZE 65536
-
 size_t get_key(const char *buffer, size_t begin, size_t end) {
     for (auto i = begin; i < end; i++) {
         if (buffer[i] == ':' && buffer[i + 1] == ' ') {
@@ -33,15 +31,24 @@ size_t get_word_CRLF(const char *buffer, size_t begin, size_t end) {
     throw std::string("SyntaxError");
 }
 
+size_t string_to_size_t(std::string str) {
+    size_t result;
+    std::stringstream ss;
+    ss << str;
+    ss >> result;
+    return result;
+}
+
 HTTPRequest::HTTPRequest() {
     this->cursor = 0;
+    this->content = nullptr;
 }
 
 HTTPRequestHeader::HTTPRequestHeader() {
 
 }
 
-ssize_t HTTPRequestHeader::parse(const char *buffer, size_t size) {
+size_t HTTPRequestHeader::parse(const char *buffer, size_t size) {
     // GET /index.html HTTP/1.1
     size_t begin, end;
     // method
@@ -79,7 +86,7 @@ void HTTPRequest::parse(int fd) {
     ssize_t size;
     // Read until EAGAIN
     for (;;) {
-        size = read(fd, this->buffer + this->cursor, (size_t)(BUFFER_SIZE - this->cursor));
+        size = read(fd, this->buffer + this->cursor, buffer_size - this->cursor);
         if (size > 0) {
             this->cursor += size;
         } else if (errno == EAGAIN) {
@@ -89,11 +96,29 @@ void HTTPRequest::parse(int fd) {
         }
     }
     // try to parse header
-    int end, content_len;
-    try {
-//        end = this->header.parse(this->buffer, 0, this->cursor);
-        // content_len = string_to_int(this->header.header["Content-Length"]);
-//        this->get_data(this->buffer, content_len, end, this->cursor);
-    } catch (std::string err) {
+}
+
+void HTTPRequest::get_content() {
+    size_t begin = this->header.parse(this->buffer, this->cursor);
+    if (this->header.header.find("Content-Length") != this->header.header.end()) {
+        // Found
+        this->content_length = string_to_size_t(this->header.header["Content-Length"]);
+        this->content = new char[this->content_length];
+        if (begin == this->cursor) {
+            this->content_written = 0;
+            this->cursor = 0;
+            return;
+        } else if (begin < this->cursor) {
+            this->content_written = this->cursor - begin;
+            memcpy(this->content, this->buffer + begin, this->content_written);
+            this->cursor = 0;
+            return;
+        } else {
+            IF_NEGATIVE_EXIT(-1);
+        }
+    } else {
+        // Not Found
+        this->content = nullptr;
+        return;
     }
 }
