@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
             IF_NEGATIVE_EXIT(-1);
         }
     }
-    auto server = Server(address, port_no);
+    auto server = Server(address, port_no, 1200);
     server.start();
     return 0;
 }

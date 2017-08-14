@@ -20,6 +20,7 @@ HTTPRequest::HTTPRequest(int fd) : buffer(fd) {
 HTTPRequest::~HTTPRequest() {
     if (this->content != nullptr) {
         delete this->content;
+        this->content = nullptr;
     }
 }
 
@@ -43,7 +44,10 @@ ParseStatus HTTPRequest::parse() {
                 } else {
                     if (this->header.find("Content-Length") != this->header.end()) {
                         this->content_length = string_to_size_t(this->header["Content-Length"]);
-                        if (this->content != nullptr) delete this->content;
+                        if (this->content != nullptr) {
+                            delete this->content;
+                            this->content = nullptr;
+                        }
                         this->content = new char[this->content_length];
                         this->content_received = 0;
                     } else {
@@ -132,6 +136,7 @@ void HTTPRequest::clean() {
     this->header.clear();
     if (this->content != nullptr) {
         delete this->content;
+        this->content = nullptr;
         this->content_length = 0;
         this->content_received = 0;
     }
