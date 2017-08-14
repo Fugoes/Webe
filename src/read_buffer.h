@@ -5,11 +5,17 @@
 #include <stdio.h>
 #include <tuple>
 
-const int buffer_size = 128;
-
 class ReadBuffer {
 public:
     ReadBuffer(int fd);
+    ~ReadBuffer();
+
+    void do_move();
+
+    /**
+     * read till EAGAIN
+     */
+    int do_read();
 
     /**
      * get a line by \r\n
@@ -31,15 +37,6 @@ public:
      */
     std::tuple<const char *, ssize_t> get_chars(ssize_t n);
 
-    /**
-     * read
-     * @return
-     * EBUSY if buffer is full
-     * EAGAIN if cannot read from fd
-     */
-    int do_read();
-
-    void do_move();
 
     /**
      * give up all chars in buffer
@@ -47,7 +44,8 @@ public:
     void do_flush();
 
 private:
-    char buffer[buffer_size];
+    char *buffer;
+    ssize_t buffer_size;
     ssize_t left, right;
     int fd;
 };
