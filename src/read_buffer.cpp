@@ -76,6 +76,9 @@ std::tuple<const char *, ssize_t> ReadBuffer::get_line() {
 }
 
 std::tuple<const char *, ssize_t> ReadBuffer::get_chars(ssize_t n) {
+    if (this->right == this->left) {
+        return std::make_tuple(nullptr, 0);
+    }
     if (this->right - this->left >= n) {
         auto result = std::make_tuple(this->buffer + this->left, n);
         this->left += n;
