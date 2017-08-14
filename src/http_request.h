@@ -1,40 +1,14 @@
 #ifndef WEBE_HTTP_REQUEST_H
 #define WEBE_HTTP_REQUEST_H
 
+#include "read_buffer.h"
 #include <map>
 #include <string>
 
-const int buffer_size = 512;
-
-enum HTTPRequestError {
-    GET_LINE_FAILED,
-    INVALID_REQUEST_LINE,
-    INVALID_HEADER
-};
-
-class HTTPRequestBuffer {
-public:
-    HTTPRequestBuffer(int fd);
-
-    std::tuple<const char *, size_t> get_line();
-
-    std::tuple<const char *, size_t> get(size_t size);
-
-    int do_read();
-
-    void do_flush();
-
-    void do_clean();
-
-    static size_t get_word(const char *s, size_t left, size_t right);
-
-    static size_t get_key(const char *s, size_t left, size_t right);
-
-    char buffer[buffer_size];
-    // [left, right) are unused buffer
-    size_t left;
-    size_t right;
-    int fd;
+enum ParseStatus {
+    PARSE_FAILED,
+    PARSE_EAGAIN,
+    PARSE_NEW_REQUEST,
 };
 
 class HTTPRequest {
@@ -44,26 +18,28 @@ public:
     std::string version;
     std::map<std::string, std::string> header;
     char *content;
-    size_t content_get;
-    size_t content_length;
+    ssize_t content_length;
 
     HTTPRequest(int fd);
 
     ~HTTPRequest();
 
-    void do_clean();
+    /**
+     * The request line and header's total length shall be smaller than buffer_size defined in read_buffer.h
+     * @return
+     * true: The HTTPRequest is ready.
+     * false: The HttpRequest is not ready.
+     */
+    ParseStatus parse();
 
-    bool parse();
-
-    void new_content(size_t size);
-
-    std::string str();
-
-    HTTPRequestBuffer buffer;
+private:
+    ssize_t content_received;
+    ReadBuffer buffer;
     enum {
         WAITING_REQUEST_LINE,
         WAITING_HEADER,
         WAITING_CONTENT,
+        GET_A_REQUEST,
     } status;
 };
 

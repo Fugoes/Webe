@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <tuple>
 
-const int buffer_size = 30;
+const int buffer_size = 128;
 
 class ReadBuffer {
 public:
@@ -45,9 +45,9 @@ public:
      */
     void do_flush();
 
+private:
     char buffer[buffer_size];
     ssize_t left, right;
-
     int fd;
 };
 
