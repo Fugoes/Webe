@@ -16,7 +16,8 @@ public:
      * @return
      * 1. char * point to first element of the line
      * 2. length of the line
-     * If failed, it will return (nullptr, 0)
+     * If failed because the buffer EAGAIN, return (nullptr, 0)
+     * If failed because the line is too long, throw "ErrorGetLine"
      */
     std::tuple<const char *, ssize_t> get_line();
 

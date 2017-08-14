@@ -31,28 +31,6 @@ Client::~Client() {
     Client::client_delete++;
 }
 
-void handle_request(HTTPRequest *r) {
-    std::cout << "--->" << std::endl;
-    std::cout << r->str() << std::endl;
-    std::cout << "<---" << std::endl;
-}
-
 void Client::handle_in(Client *self) {
     self->time_stamp = self->server->time_stamp;
-    int flag;
-    while (1) {
-        std::cout << "Hi\n";
-        flag = self->request.buffer.do_read();
-        if (flag == EAGAIN) {
-            break;
-        } else if (flag == EBUSY) {
-            while (self->request.parse()) {
-                handle_request(&self->request);
-            }
-            self->request.buffer.do_flush();
-        }
-    }
-    while (self->request.parse()) {
-        handle_request(&self->request);
-    }
 }

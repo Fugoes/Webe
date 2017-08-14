@@ -27,10 +27,13 @@ public:
     /**
      * The request line and header's total length shall be smaller than buffer_size defined in read_buffer.h
      * @return
-     * true: The HTTPRequest is ready.
-     * false: The HttpRequest is not ready.
+     * PARSE_FAILED,
+     * PARSE_EAGAIN,
+     * PARSE_NEW_REQUEST,
      */
     ParseStatus parse();
+
+    bool parse_request_line(std::tuple<const char *, ssize_t> arg);
 
 private:
     ssize_t content_received;

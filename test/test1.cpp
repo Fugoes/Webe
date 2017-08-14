@@ -27,6 +27,7 @@ int main(int argc, char *argv[]) {
             "\r\n"
             "Hello World.";
     HTTPRequest hr(0);
+    /*
     for (auto i = 0; i < sizeof(s) - 1; i++) {
         hr.buffer.buffer[i] = s[i];
     }
@@ -46,4 +47,5 @@ int main(int argc, char *argv[]) {
         std::cout << "true\n";
         std::cout << hr.str();
     }
+     */
 }

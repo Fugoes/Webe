@@ -6,6 +6,8 @@ extern "C" {
 #include <unistd.h>
 }
 
+const ssize_t max_line_size = 33;
+
 ReadBuffer::ReadBuffer(int fd) {
     this->fd = fd;
     this->left = 0;
@@ -14,18 +16,27 @@ ReadBuffer::ReadBuffer(int fd) {
 
 std::tuple<const char *, ssize_t> ReadBuffer::get_line() {
     ssize_t i;
-    for (i = this->left; i + 1 < this->right; i++) {
-        if (this->buffer[i] == '\r' && this->buffer[i + 1] == '\n') {
-            auto result = std::make_tuple(this->buffer + this->left, i - this->left);
-            this->left = i + 2;
-            return result;
+    while (1) {
+        for (i = this->left; i + 1 < this->right; i++) {
+            if (this->buffer[i] == '\r' && this->buffer[i + 1] == '\n') {
+                auto result = std::make_tuple(this->buffer + this->left, i - this->left);
+                this->left = i + 2;
+                return result;
+            }
+        }
+        if (this->right - this->left > max_line_size) {
+            throw "ErrorGetLine";
+        } else {
+            this->do_move();
+            if (this->do_read() == EAGAIN) {
+                return std::make_tuple(nullptr, 0);
+            }
         }
     }
-    return std::make_pair(nullptr, 0);
 }
 
 int ReadBuffer::do_read() {
-    IF_FALSE_EXIT(left <= right);
+    IF_FALSE_EXIT(this->left <= this->right);
     ssize_t size;
     while (1) {
         if (this->right == buffer_size) {
@@ -37,7 +48,7 @@ int ReadBuffer::do_read() {
         } else if (errno == EAGAIN) {
             return EAGAIN;
         } else if (size == 0) {
-            return 0;
+            return EAGAIN;
         } else {
             IF_FALSE_EXIT(false);
         }
@@ -81,4 +92,3 @@ std::tuple<const char *, ssize_t> ReadBuffer::get_chars(ssize_t n) {
         return result;
     }
 }
-
