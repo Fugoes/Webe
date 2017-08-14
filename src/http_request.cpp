@@ -64,4 +64,5 @@ int HTTPRequest::parse_request_line(const char *str, ssize_t size) {
     str += i;
     size -= i;
     this->version.assign(str, size * sizeof(char));
+    return 0;
 }
