@@ -12,6 +12,7 @@ class Client {
 public:
     static int client_new;
     static int client_delete;
+    HTTPRequest request;
 
     Client(int fd, std::string addr, uint16_t port_no, Server *server);
 
@@ -27,8 +28,6 @@ private:
     uint16_t port_no;
     uint64_t time_stamp;
     int fd;
-
-    HTTPRequest request;
 
     friend class Server;
 };

@@ -14,12 +14,16 @@ extern "C" {
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <dlfcn.h>
 }
 
 Server::Server(std::string server_addr, uint16_t port_no, uint64_t time_out /* = 60 */ ) {
     this->server_addr = server_addr;
     this->port_no = port_no;
     this->time_out = time_out;
+
+    auto handle = dlopen("./libmodule_404.so", RTLD_LAZY);
+    this->http_request_hook.push_back((handle_http_request)dlsym(handle, "http_request_handler"));
 }
 
 void Server::start() {

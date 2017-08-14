@@ -6,10 +6,12 @@
 #include <unordered_map>
 #include <map>
 #include <cstdint>
+#include <vector>
 
 class Server;
 
 #include "client.h"
+#include "modules.h"
 
 
 class Server {
@@ -28,6 +30,7 @@ private:
     uint64_t time_stamp;
     uint64_t time_out;
     std::unordered_map<int, Client *> fd_to_client;
+    std::vector<handle_http_request> http_request_hook;
 
     void do_socket();
 

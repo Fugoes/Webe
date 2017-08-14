@@ -10,7 +10,11 @@ set(SOURCE_FILES
         src/http_response.h src/http_request.cpp
         src/http_request.h src/read_buffer.cpp
         src/read_buffer.h)
-add_executable(Webe src/main.cpp ${SOURCE_FILES})
+
+add_library(module_404 SHARED src/modules/module_404.cpp src/modules/module_404.h)
+
+add_executable(Webe src/main.cpp ${SOURCE_FILES} src/modules.h)
+target_link_libraries(Webe module_404 dl)
 add_executable(test1 test/test1.cpp ${SOURCE_FILES})
 add_executable(test2 test/test2.cpp ${SOURCE_FILES})
 add_executable(test3 test/test3.cpp ${SOURCE_FILES})

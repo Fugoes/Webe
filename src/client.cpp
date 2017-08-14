@@ -35,11 +35,13 @@ void Client::handle_in(Client *self) {
     self->time_stamp = self->server->time_stamp;
     self->request.buffer.do_read();
     while (self->request.parse() == PARSE_NEW_REQUEST) {
-        /*
-        std::cout << "--->" << std::endl;
-        std::cout << self->request.str() << std::endl;
-        std::cout << "<---" << std::endl;
-         */
+        for (auto func : self->server->http_request_hook) {
+            auto response = func(self);
+            if (response != nullptr) {
+                response->send(self->fd);
+                delete response;
+            }
+        }
         self->request.clean();
     }
 }

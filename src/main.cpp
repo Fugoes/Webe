@@ -2,6 +2,10 @@
 #include "http_request.h"
 #include "server.h"
 
+extern "C" {
+#include <dlfcn.h>
+}
+
 int main(int argc, char *argv[]) {
     uint16_t port_no = 8080;
     std::string address = "0.0.0.0";
