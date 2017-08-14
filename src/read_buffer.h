@@ -37,7 +37,6 @@ public:
      */
     std::tuple<const char *, ssize_t> get_chars(ssize_t n);
 
-
     /**
      * give up all chars in buffer
      */

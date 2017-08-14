@@ -51,12 +51,14 @@ int ReadBuffer::do_read() {
                 delete old_buffer;
                 continue;
             }
-        } else if (size == 0 || (size == -1 && errno == EAGAIN)) {
+        } else if (size == -1 && errno == EAGAIN) {
             if (this->right > old_right) {
                 return 0;
             } else {
                 return -1;
             }
+        } else if (size == 0) {
+            return -1;
         } else {
             IF_FALSE_EXIT(false);
         }

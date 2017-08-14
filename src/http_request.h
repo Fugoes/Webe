@@ -19,9 +19,13 @@ public:
     char *content;
     ssize_t content_length;
 
+    ReadBuffer buffer;
+
     HTTPRequest(int fd);
 
     ~HTTPRequest();
+
+    void clean();
 
     /**
      * The request line and header's total length shall be smaller than buffer_size defined in read_buffer.h
@@ -32,13 +36,14 @@ public:
      */
     ParseStatus parse();
 
+    std::string str();
+
     int parse_request_line(const char *str, ssize_t size);
 
     int parse_header_line(const char *str, ssize_t size);
 
 private:
     ssize_t content_received;
-    ReadBuffer buffer;
     enum {
         WAITING_REQUEST_LINE,
         WAITING_HEADER,
