@@ -9,5 +9,12 @@ int main() {
     std::cout << hr.method << "\n";
     std::cout << hr.uri << "\n";
     std::cout << hr.version << "\n";
+    char stra[] = "Content-Length: sdfjlkadsf";
+    char strb[] = "Content-Lengbh: sdfjlkadsf";
+    hr.parse_header_line(stra, sizeof(stra) - 1);
+    hr.parse_header_line(strb, sizeof(strb) - 1);
+    for (auto && i : hr.header) {
+        std::cout << std::get<0>(i) << ":" << std::get<1>(i) << std::endl;
+    }
     return 0;
 }

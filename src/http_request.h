@@ -34,6 +34,8 @@ public:
 
     int parse_request_line(const char *str, ssize_t size);
 
+    int parse_header_line(const char *str, ssize_t size);
+
 private:
     ssize_t content_received;
     ReadBuffer buffer;
