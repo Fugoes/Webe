@@ -7,7 +7,6 @@
 
 enum ParseStatus {
     PARSE_FAILED,
-    PARSE_EAGAIN,
     PARSE_NEW_REQUEST,
 };
 
@@ -33,7 +32,7 @@ public:
      */
     ParseStatus parse();
 
-    bool parse_request_line(std::tuple<const char *, ssize_t> arg);
+    int parse_request_line(const char *str, ssize_t size);
 
 private:
     ssize_t content_received;
