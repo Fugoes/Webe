@@ -11,12 +11,16 @@ set(SOURCE_FILES
         src/http_request.h src/read_buffer.cpp
         src/read_buffer.h)
 
-add_library(module_404 SHARED src/modules/module_404.cpp src/modules/module_404.h)
+add_library(module_404 SHARED src/modules/module_404.cpp src/modules/module_base.h)
 add_library(module_info SHARED src/modules/module_info.cpp src/modules/module_info.h)
 
 add_executable(webed src/main.cpp ${SOURCE_FILES})
-target_link_libraries(webed dl module_404 module_info)
+target_link_libraries(webed dl module_404)
 add_executable(test1 test/test1.cpp ${SOURCE_FILES})
+target_link_libraries(test1 dl)
 add_executable(test2 test/test2.cpp ${SOURCE_FILES})
+target_link_libraries(test2 dl)
 add_executable(test3 test/test3.cpp ${SOURCE_FILES})
+target_link_libraries(test3 dl)
 add_executable(test4 test/test4.cpp ${SOURCE_FILES})
+target_link_libraries(test4 dl)

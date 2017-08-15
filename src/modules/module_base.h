@@ -1,5 +1,5 @@
-#ifndef WEBE_MODULE_404_H
-#define WEBE_MODULE_404_H
+#ifndef WEBE_MODULE_BASE_H_H
+#define WEBE_MODULE_BASE_H_H
 
 #include "../client.h"
 #include "../server.h"
@@ -9,4 +9,4 @@ int module_load(Server *server);
 int module_unload(Server *server);
 };
 
-#endif //WEBE_MODULE_404_H
+#endif //WEBE_MODULE_BASE_H_H
