@@ -8,5 +8,12 @@
 
 typedef HTTPResponse* (*HTTPRequestHandler)(Client *client);
 typedef void (*TimerHandler)(Server *server);
+typedef int (*ModuleLoad)(Server *server);
+typedef int (*ModuleUnload)(Server *server);
+
+const std::map<std::string, std::tuple<bool, bool>> available_modules = {
+        {"404", std::make_tuple(true, false)},
+        {"info", std::make_tuple(true, true)},
+};
 
 #endif //WEBE_MODULES_H_H

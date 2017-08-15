@@ -7,6 +7,7 @@
 #include <map>
 #include <cstdint>
 #include <vector>
+#include <tuple>
 
 class Server;
 
@@ -30,6 +31,10 @@ private:
     uint64_t time_stamp;
     uint64_t time_out;
     std::unordered_map<int, Client *> fd_to_client;
+
+    // name -> (handle, ModuleUnload)
+    std::map<std::string, std::tuple<int, ModuleUnload>> loaded_modules;
+
     std::vector<HTTPRequestHandler> http_request_hook;
     std::vector<TimerHandler> timer_hook;
 
