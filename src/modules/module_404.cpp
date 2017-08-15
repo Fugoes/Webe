@@ -22,14 +22,9 @@ HTTPResponse *http_request_handler(Client *client) {
 }
 
 int module_load(Server *server) {
-    server->http_request_hook.push_back(&http_request_handler);
+    Server::append_to_hook<HTTPRequestHandler>(server->http_request_hook, &http_request_handler);
 }
 
 int module_unload(Server *server) {
-    for (auto i = server->http_request_hook.begin(); i != server->http_request_hook.end(); i++) {
-        if (*i == &http_request_handler) {
-            server->http_request_hook.erase(i);
-            return 0;
-        }
-    }
+    Server::remove_from_hook<HTTPRequestHandler>(server->http_request_hook, &http_request_handler);
 }

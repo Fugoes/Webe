@@ -31,7 +31,7 @@ void Server::start(std::vector<std::string> modules) {
     this->do_listen();
     this->do_epoll();
     this->do_timer();
-    for (auto && module : modules) {
+    for (auto &&module : modules) {
         this->load_module(module);
     }
     printf("Listen %s:%u\n", this->server_addr.c_str(), this->port_no);
@@ -176,7 +176,7 @@ void Server::load_module(std::string module) {
     if (available_modules.find(module) != available_modules.end()) {
         auto handle = dlopen(("libmodule_" + module + ".so").c_str(), RTLD_LAZY);
         this->loaded_modules[module] = handle;
-        auto module_load = (ModuleLoad)dlsym(handle, "module_load");
+        auto module_load = (ModuleLoad) dlsym(handle, "module_load");
         module_load(this);
     }
 }

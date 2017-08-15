@@ -26,6 +26,21 @@ public:
     std::vector<HTTPRequestHandler> http_request_hook;
     std::vector<TimerHandler> timer_hook;
 
+    template<typename T>
+    static void append_to_hook(std::vector<T> &hook, T func) {
+        hook.push_back(func);
+    }
+
+    template<typename T>
+    static void remove_from_hook(std::vector<T> &hook, T func) {
+        for (auto i = hook.begin(); i != hook.end(); ++i) {
+            if (*i == func) {
+                hook.erase(i);
+                return;
+            }
+        }
+    }
+
 private:
     std::string server_addr;
     uint16_t port_no;
