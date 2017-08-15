@@ -3,7 +3,9 @@
 #include <cinttypes>
 #include <fstream>
 
-uint64_t mem_total, mem_free, mem_available;
+static uint64_t mem_total, mem_free, mem_available;
+static std::string version;
+static HTTPResponse *http_request_handler(Client *client);
 
 static constexpr char p[] = "/info";
 
@@ -17,6 +19,39 @@ static void refresh_mem_info() {
     printf("total: %" PRIu64 " free: %" PRIu64 " available: %" PRIu64 "\n", mem_total, mem_free, mem_available);
 }
 
+static void get_version_info() {
+    std::ifstream file;
+    file.open("/proc/version", std::fstream::in);
+    std::getline(file, version);
+}
+
+static void refresh_cpu_info() {
+    std::ifstream file;
+    std::stringstream ss;
+    std::string s;
+}
+
+static void timer_handler(Server *server) {
+    refresh_mem_info();
+    get_version_info();
+}
+
+int module_load(Server *server) {
+    printf("Loading module info...\n");
+    refresh_mem_info();
+    Server::append_to_hook(server->timer_hook, &timer_handler);
+    Server::insert_to_front_of_hook(server->http_request_hook, &http_request_handler);
+    printf("Loaded module info...\n");
+}
+
+int module_unload(Server *server) {
+    printf("Unloading module info...\n");
+    refresh_mem_info();
+    Server::remove_from_hook(server->timer_hook, &timer_handler);
+    Server::remove_from_hook(server->http_request_hook, &http_request_handler);
+    printf("Unloaded module info...\n");
+}
+
 static HTTPResponse *http_request_handler(Client *client) {
     if (match_path<p, 5>(client->request.uri)) {
         auto response = new HTTPResponse();
@@ -27,6 +62,7 @@ static HTTPResponse *http_request_handler(Client *client) {
                         "<body bgcolor=\"white\">"
                         "<hr>"
                         "<center><h1>System Information</h1></center>"
+                        "<center>" + version + "</center>"
                         "<hr>"
                         "<center><h2>Memory</h2>"
                         "<table border=\"1\">"
@@ -48,24 +84,4 @@ static HTTPResponse *http_request_handler(Client *client) {
     } else {
         return nullptr;
     }
-}
-
-static void timer_handler(Server *server) {
-    refresh_mem_info();
-}
-
-int module_load(Server *server) {
-    printf("Loading module info...\n");
-    refresh_mem_info();
-    Server::append_to_hook(server->timer_hook, &timer_handler);
-    Server::insert_to_front_of_hook(server->http_request_hook, &http_request_handler);
-    printf("Loaded module info...\n");
-}
-
-int module_unload(Server *server) {
-    printf("Unloading module info...\n");
-    refresh_mem_info();
-    Server::remove_from_hook(server->timer_hook, &timer_handler);
-    Server::remove_from_hook(server->http_request_hook, &http_request_handler);
-    printf("Unloaded module info...\n");
 }

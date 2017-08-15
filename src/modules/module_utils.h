@@ -6,6 +6,7 @@
 template <const char *path, int length>
 static bool match_path(const std::string &uri) {
     int i;
+    if (uri.size() < length) return false;
     for (i = 0; i < length; i++) {
         if (uri[i] != path[i]) {
             return false;
