@@ -38,6 +38,7 @@ void Client::handle_in(Client *self) {
         for (auto func : self->server->http_request_hook) {
             auto response = func(self);
             if (response != nullptr) {
+                response->parse();
                 response->send(self->fd);
                 delete response;
             }

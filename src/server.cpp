@@ -23,7 +23,7 @@ Server::Server(std::string server_addr, uint16_t port_no, uint64_t time_out /* =
     this->time_out = time_out;
 
     auto handle = dlopen("./libmodule_404.so", RTLD_LAZY);
-    this->http_request_hook.push_back((handle_http_request)dlsym(handle, "http_request_handler"));
+    this->http_request_hook.push_back((HTTPRequestHandler)dlsym(handle, "http_request_handler"));
 }
 
 void Server::start() {
@@ -129,9 +129,10 @@ void Server::event_loop(int max_events) {
                 // timer
                 IF_NEGATIVE_EXIT(read(this->timer_fd, &timer_buf, 8));
                 this->time_stamp += timer_buf;
-                printf("| Alive %8d | New %8d | Delete %8d |\n", Client::client_new - Client::client_delete,
-                       Client::client_new, Client::client_delete);
-                if (this->time_stamp % 5 == 0) {
+                for (auto func : this->timer_hook) {
+                    func(this);
+                }
+                if (this->time_stamp % 10 == 0) {
                     // clean dead connection
                     this->clean_old_connections();
                 }

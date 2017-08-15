@@ -30,7 +30,8 @@ private:
     uint64_t time_stamp;
     uint64_t time_out;
     std::unordered_map<int, Client *> fd_to_client;
-    std::vector<handle_http_request> http_request_hook;
+    std::vector<HTTPRequestHandler> http_request_hook;
+    std::vector<TimerHandler> timer_hook;
 
     void do_socket();
 

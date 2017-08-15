@@ -6,6 +6,7 @@
 #include "http_request.h"
 #include "http_response.h"
 
-typedef HTTPResponse* (*handle_http_request)(Client *client);
+typedef HTTPResponse* (*HTTPRequestHandler)(Client *client);
+typedef void (*TimerHandler)(Server *server);
 
 #endif //WEBE_MODULES_H_H

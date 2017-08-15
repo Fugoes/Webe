@@ -11,7 +11,7 @@ set(SOURCE_FILES
         src/http_request.h src/read_buffer.cpp
         src/read_buffer.h)
 
-add_library(module_404 SHARED src/modules/module_404.cpp src/modules/module_404.h)
+add_library(module_404 SHARED src/modules/module_404.cpp src/modules/module_404.h src/modules/module_info.cpp src/modules/module_info.h)
 
 add_executable(Webe src/main.cpp ${SOURCE_FILES} src/modules.h)
 target_link_libraries(Webe module_404 dl)

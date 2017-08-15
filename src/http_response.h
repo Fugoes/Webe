@@ -5,34 +5,11 @@
 #include <tuple>
 #include <list>
 
-class HTTPResponseHeader;
-class HTTPResponse;
-
-class HTTPResponseHeader {
-public:
-    HTTPResponseHeader();
-
-    void set_status(std::string status_code);
-
-    void append(std::string name, std::string value);
-
-    std::string raw;
-
-    static std::string date();
-
-private:
-    std::string status_code;
-    std::list <std::tuple<std::string, std::string>> header;
-
-    void parse();
-
-    friend class HTTPResponse;
-};
-
-
 class HTTPResponse {
 public:
-    HTTPResponseHeader header;
+    std::string version;
+    std::string status;
+    std::list<std::tuple<std::string, std::string>> header;
     std::string data;
     std::string raw;
 
@@ -41,6 +18,8 @@ public:
     void parse();
 
     void send(int fd);
+
+    static std::string date();
 };
 
 #endif //WEBE_HTTP_RESPONSE_H
