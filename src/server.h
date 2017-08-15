@@ -25,10 +25,16 @@ public:
 
     std::vector<HTTPRequestHandler> http_request_hook;
     std::vector<TimerHandler> timer_hook;
+    uint64_t time_stamp;
 
     template<typename T>
     static void append_to_hook(std::vector<T> &hook, T func) {
         hook.push_back(func);
+    }
+
+    template<typename T>
+    static void insert_to_front_of_hook(std::vector<T> &hook, T func) {
+        hook.insert(hook.begin(), func);
     }
 
     template<typename T>
@@ -47,7 +53,6 @@ private:
     int server_sock;
     int epoll_fd;
     int timer_fd;
-    uint64_t time_stamp;
     uint64_t time_out;
     std::unordered_map<int, Client *> fd_to_client;
 
