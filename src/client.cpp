@@ -41,6 +41,7 @@ void Client::handle_in(Client *self) {
                 response->parse();
                 response->send(self->fd);
                 delete response;
+                break;
             }
         }
         self->request.clean();

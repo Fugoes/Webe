@@ -3,9 +3,9 @@
 #include <cstdint>
 #include <cinttypes>
 
-uint64_t count = 0;
+static uint64_t count = 0;
 
-HTTPResponse *http_request_handler(Client *client) {
+static HTTPResponse *http_request_handler(Client *client) {
     auto response = new HTTPResponse();
     count++;
     response->version = "HTTP/1.1";
@@ -26,7 +26,7 @@ HTTPResponse *http_request_handler(Client *client) {
     return response;
 }
 
-void timer_handler(Server *server) {
+static void timer_handler(Server *server) {
     printf("%10" PRIu64 " 404 Count %" PRIu64 "\n", server->time_stamp, count);
 }
 
