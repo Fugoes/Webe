@@ -23,6 +23,8 @@ public:
 
     void load_module(std::string module);
 
+    void unload_module(std::string module);
+
     std::vector<HTTPRequestHandler> http_request_hook;
     std::vector<TimerHandler> timer_hook;
     uint64_t time_stamp;
@@ -79,6 +81,8 @@ private:
     static void set_nonblocking(int fd);
 
     static void signal_handler(int dunno);
+
+    void command_handler();
 
     friend class Client;
 };

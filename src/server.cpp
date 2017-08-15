@@ -139,9 +139,7 @@ void Server::event_loop(int max_events) {
                 }
             } else if (events[i].data.fd == this->udp_fd) {
                 // udp
-                char buf[1024];
-                ssize_t size = read(this->udp_fd, buf, sizeof(buf));
-                printf("%s\n", buf);
+                this->command_handler();
             } else {
                 switch (events[i].events) {
                     case EPOLLIN: // ready for read
@@ -180,6 +178,9 @@ void Server::load_module(std::string module) {
     if (available_modules.find(module) != available_modules.end()) {
         auto handle = dlopen(("libmodule_" + module + ".so").c_str(), RTLD_LAZY);
         this->loaded_modules[module] = handle;
+        for (auto && i : this->loaded_modules) {
+            std::cout << std::get<0>(i) << ": " << std::get<1>(i);
+        }
         auto module_load = (ModuleLoad) dlsym(handle, "module_load");
         module_load(this);
     }
@@ -193,7 +194,7 @@ void Server::do_udp() {
 
     name.sun_family = AF_UNIX;
     strcpy(name.sun_path, ("/tmp/webed_" + std::to_string(getpid()) + ".sock").c_str());
-    IF_NEGATIVE_EXIT(bind(this->udp_fd, (struct sockaddr *)&name, sizeof(struct sockaddr_un)));
+    IF_NEGATIVE_EXIT(bind(this->udp_fd, (struct sockaddr *) &name, sizeof(struct sockaddr_un)));
 }
 
 void Server::signal_handler(int dunno) {
@@ -207,5 +208,35 @@ void Server::signal_handler(int dunno) {
             exit(0);
         default:
             IF_NEGATIVE_EXIT(-1);
+    }
+}
+
+void Server::command_handler() {
+    char buf[1024];
+    ssize_t size = read(this->udp_fd, buf, sizeof(buf));
+    std::string cmd;
+    if (size > 0) {
+        cmd.assign(buf, size * sizeof(char));
+    } else {
+        IF_FALSE_EXIT(false);
+    }
+    std::cout << cmd.substr(12) << std::endl;
+    if (cmd.substr(0, 11) == "load-module") {
+        this->load_module(cmd.substr(12));
+    }
+    if (cmd.substr(0, 13) == "unload-module") {
+        this->unload_module(cmd.substr(14));
+    }
+}
+
+void Server::unload_module(std::string module) {
+    auto m = this->loaded_modules.find(module);
+    if (m != this->loaded_modules.end()) {
+        auto handle = std::get<1>(*m);
+        auto module_unload = (ModuleUnload) dlsym(handle, "module_unload");
+        module_unload(this);
+        std::cout << "Unload Module!" << std::endl;
+    } else {
+        std::cout << "Module " << module << " is not loaded!\n";
     }
 }

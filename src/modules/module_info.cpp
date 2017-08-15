@@ -46,7 +46,6 @@ int module_load(Server *server) {
 
 int module_unload(Server *server) {
     printf("Unloading module info...\n");
-    refresh_mem_info();
     Server::remove_from_hook(server->timer_hook, &timer_handler);
     Server::remove_from_hook(server->http_request_hook, &http_request_handler);
     printf("Unloaded module info...\n");
