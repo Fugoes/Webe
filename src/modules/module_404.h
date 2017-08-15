@@ -5,7 +5,8 @@
 #include "../server.h"
 
 extern "C" {
-HTTPResponse *http_request_handler(Client *client);
+int module_load(Server *server);
+int module_unload(Server *server);
 };
 
 #endif //WEBE_MODULE_404_H

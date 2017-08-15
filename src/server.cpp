@@ -21,17 +21,19 @@ Server::Server(std::string server_addr, uint16_t port_no, uint64_t time_out /* =
     this->server_addr = server_addr;
     this->port_no = port_no;
     this->time_out = time_out;
-
-    auto handle = dlopen("./libmodule_404.so", RTLD_LAZY);
-    this->http_request_hook.push_back((HTTPRequestHandler)dlsym(handle, "http_request_handler"));
+    this->loaded_modules.clear();
+    this->time_stamp = 0;
 }
 
-void Server::start() {
+void Server::start(std::vector<std::string> modules) {
     this->do_socket();
     this->do_bind();
     this->do_listen();
     this->do_epoll();
     this->do_timer();
+    for (auto && module : modules) {
+        this->load_module(module);
+    }
     printf("Listen %s:%u\n", this->server_addr.c_str(), this->port_no);
     this->event_loop(1024);
 }
@@ -167,5 +169,14 @@ void Server::clean_old_connections() {
             iter = this->fd_to_client.erase(iter);
             delete c;
         } else ++iter;
+    }
+}
+
+void Server::load_module(std::string module) {
+    if (available_modules.find(module) != available_modules.end()) {
+        auto handle = dlopen(("libmodule_" + module + ".so").c_str(), RTLD_LAZY);
+        this->loaded_modules[module] = handle;
+        auto module_load = (ModuleLoad)dlsym(handle, "module_load");
+        module_load(this);
     }
 }

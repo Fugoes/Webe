@@ -19,8 +19,12 @@ class Server {
 public:
     Server(std::string server_addr, uint16_t port_no, uint64_t time_out = 60);
 
-    void start();
+    void start(std::vector<std::string> modules);
 
+    void load_module(std::string module);
+
+    std::vector<HTTPRequestHandler> http_request_hook;
+    std::vector<TimerHandler> timer_hook;
 
 private:
     std::string server_addr;
@@ -32,11 +36,8 @@ private:
     uint64_t time_out;
     std::unordered_map<int, Client *> fd_to_client;
 
-    // name -> (handle, ModuleUnload)
-    std::map<std::string, std::tuple<int, ModuleUnload>> loaded_modules;
-
-    std::vector<HTTPRequestHandler> http_request_hook;
-    std::vector<TimerHandler> timer_hook;
+    // name -> handle
+    std::map<std::string, void *> loaded_modules;
 
     void do_socket();
 

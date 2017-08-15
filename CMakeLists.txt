@@ -14,8 +14,8 @@ set(SOURCE_FILES
 add_library(module_404 SHARED src/modules/module_404.cpp src/modules/module_404.h)
 add_library(module_info SHARED src/modules/module_info.cpp src/modules/module_info.h)
 
-add_executable(Webe src/main.cpp ${SOURCE_FILES} src/modules.h)
-target_link_libraries(Webe dl module_404 module_info)
+add_executable(webed src/main.cpp ${SOURCE_FILES})
+target_link_libraries(webed dl module_404 module_info)
 add_executable(test1 test/test1.cpp ${SOURCE_FILES})
 add_executable(test2 test/test2.cpp ${SOURCE_FILES})
 add_executable(test3 test/test3.cpp ${SOURCE_FILES})
