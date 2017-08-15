@@ -1,6 +1,8 @@
 #include <iostream>
 #include "server.h"
 
+extern Server *this_server;
+
 int main(int argc, char *argv[]) {
     uint16_t port_no = 8080;
     std::string address = "0.0.0.0";
@@ -18,6 +20,7 @@ int main(int argc, char *argv[]) {
         }
     }
     auto server = Server(address, port_no, 1200);
+    this_server = &server;
     std::vector<std::string> modules = {"404", "info"};
     server.start(modules);
     return 0;

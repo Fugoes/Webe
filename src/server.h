@@ -53,6 +53,7 @@ private:
     int server_sock;
     int epoll_fd;
     int timer_fd;
+    int udp_fd;
     uint64_t time_out;
     std::unordered_map<int, Client *> fd_to_client;
 
@@ -69,11 +70,15 @@ private:
 
     void do_timer();
 
+    void do_udp();
+
     void event_loop(int max_events = 128);
 
     void clean_old_connections();
 
     static void set_nonblocking(int fd);
+
+    static void signal_handler(int dunno);
 
     friend class Client;
 };

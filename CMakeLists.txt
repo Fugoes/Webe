@@ -16,6 +16,7 @@ add_library(module_info SHARED src/modules/module_info.cpp src/modules/module_ba
 
 add_executable(webed src/main.cpp ${SOURCE_FILES})
 target_link_libraries(webed dl module_404 module_info)
+add_executable(webectl src/webectl.cpp src/utils.h)
 add_executable(test1 test/test1.cpp ${SOURCE_FILES})
 target_link_libraries(test1 dl)
 add_executable(test2 test/test2.cpp ${SOURCE_FILES})

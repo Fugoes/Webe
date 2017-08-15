@@ -9,6 +9,7 @@ extern "C" {
 #include <sys/types.h>
 #include <sys/timerfd.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <sys/epoll.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -17,12 +18,15 @@ extern "C" {
 #include <dlfcn.h>
 }
 
+Server *this_server;
+
 Server::Server(std::string server_addr, uint16_t port_no, uint64_t time_out /* = 60 */ ) {
     this->server_addr = server_addr;
     this->port_no = port_no;
     this->time_out = time_out;
     this->loaded_modules.clear();
     this->time_stamp = 0;
+    this->udp_fd = -1;
 }
 
 void Server::start(std::vector<std::string> modules) {
@@ -34,6 +38,7 @@ void Server::start(std::vector<std::string> modules) {
     for (auto &&module : modules) {
         this->load_module(module);
     }
+    this->do_udp();
     printf("Listen %s:%u\n", this->server_addr.c_str(), this->port_no);
     this->event_loop(1024);
 }
@@ -76,17 +81,6 @@ void Server::do_timer() {
     timerfd_settime(this->timer_fd, 0, &it, NULL);
 }
 
-void handle_sig(int dunno) {
-    switch (dunno) {
-        case SIGUSR1:
-            printf("Alive %d\t\tNew %d\t\tDelete %d\n", Client::client_new - Client::client_delete,
-                   Client::client_new, Client::client_delete);
-            break;
-        default:
-            IF_NEGATIVE_EXIT(-1);
-    }
-}
-
 void Server::event_loop(int max_events) {
     struct epoll_event ev, events[max_events];
     ev.events = EPOLLIN;
@@ -97,7 +91,12 @@ void Server::event_loop(int max_events) {
     ev.data.fd = this->timer_fd;
     IF_NEGATIVE_EXIT(epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, this->timer_fd, &ev));
 
-    signal(SIGUSR1, handle_sig);
+    signal(SIGUSR1, Server::signal_handler);
+    signal(SIGINT, Server::signal_handler);
+
+    ev.events = EPOLLIN | EPOLLET;
+    ev.data.fd = this->udp_fd;
+    IF_NEGATIVE_EXIT(epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, this->udp_fd, &ev));
 
     int nevent, i;
     int client_sock;
@@ -138,6 +137,11 @@ void Server::event_loop(int max_events) {
                     // clean dead connection
                     this->clean_old_connections();
                 }
+            } else if (events[i].data.fd == this->udp_fd) {
+                // udp
+                char buf[1024];
+                ssize_t size = read(this->udp_fd, buf, sizeof(buf));
+                printf("%s\n", buf);
             } else {
                 switch (events[i].events) {
                     case EPOLLIN: // ready for read
@@ -178,5 +182,30 @@ void Server::load_module(std::string module) {
         this->loaded_modules[module] = handle;
         auto module_load = (ModuleLoad) dlsym(handle, "module_load");
         module_load(this);
+    }
+}
+
+void Server::do_udp() {
+    this->udp_fd = socket(AF_UNIX, SOCK_DGRAM | SOCK_NONBLOCK, 0);
+    IF_NEGATIVE_EXIT(this->udp_fd);
+
+    struct sockaddr_un name;
+
+    name.sun_family = AF_UNIX;
+    strcpy(name.sun_path, ("/tmp/webed_" + std::to_string(getpid()) + ".sock").c_str());
+    IF_NEGATIVE_EXIT(bind(this->udp_fd, (struct sockaddr *)&name, sizeof(struct sockaddr_un)));
+}
+
+void Server::signal_handler(int dunno) {
+    switch (dunno) {
+        case SIGUSR1:
+            printf("Alive %d\t\tNew %d\t\tDelete %d\n", Client::client_new - Client::client_delete,
+                   Client::client_new, Client::client_delete);
+            break;
+        case SIGINT:
+            unlink(("/tmp/webed_" + std::to_string(getpid()) + ".sock").c_str());
+            exit(0);
+        default:
+            IF_NEGATIVE_EXIT(-1);
     }
 }
