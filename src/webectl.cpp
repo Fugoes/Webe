@@ -16,6 +16,7 @@ extern "C" {
 const std::set<std::string> available_modules = {
         "404",
         "info",
+        "file_server",
 };
 
 void do_help() {

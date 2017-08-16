@@ -16,6 +16,7 @@ typedef void (*TimerHandler)(Server *server);
 const std::set<std::string> available_modules = {
         "404",
         "info",
+        "file_server",
 };
 
 #endif //WEBE_MODULES_H_H

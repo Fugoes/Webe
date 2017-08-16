@@ -13,11 +13,12 @@ set(SOURCE_FILES
 
 add_library(module_404 SHARED src/modules/module_404.cpp src/modules/module_base.h)
 add_library(module_info SHARED src/modules/module_info.cpp src/modules/module_base.h)
+add_library(module_file_server SHARED src/modules/module_file_server.cpp src/modules/module_base.h)
 
 add_executable(webed src/main.cpp ${SOURCE_FILES})
-target_link_libraries(webed dl module_404 module_info)
+target_link_libraries(webed dl module_404 module_info module_file_server)
 add_executable(webectl src/webectl.cpp ${SOURCE_FILES})
-target_link_libraries(webectl dl module_404 module_info)
+target_link_libraries(webectl dl module_404 module_info module_file_server)
 add_executable(test1 test/test1.cpp ${SOURCE_FILES})
 target_link_libraries(test1 dl)
 add_executable(test2 test/test2.cpp ${SOURCE_FILES})

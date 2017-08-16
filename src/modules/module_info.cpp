@@ -16,7 +16,6 @@ static void refresh_mem_info() {
 
     file.open("/proc/meminfo", std::fstream::in);
     file >> s >> mem_total >> s >> s >> mem_free >> s >> s >> mem_available;
-    printf("total: %" PRIu64 " free: %" PRIu64 " available: %" PRIu64 "\n", mem_total, mem_free, mem_available);
 }
 
 static void get_version_info() {
@@ -41,14 +40,14 @@ int module_load(Server *server) {
     refresh_mem_info();
     Server::append_to_hook(server->timer_hook, &timer_handler);
     Server::insert_to_front_of_hook(server->http_request_hook, &http_request_handler);
-    printf("Loaded module info...\n");
+    printf("Loaded module info\n");
 }
 
 int module_unload(Server *server) {
     printf("Unloading module info...\n");
     Server::remove_from_hook(server->timer_hook, &timer_handler);
     Server::remove_from_hook(server->http_request_hook, &http_request_handler);
-    printf("Unloaded module info...\n");
+    printf("Unloaded module info\n");
 }
 
 static HTTPResponse *http_request_handler(Client *client) {

@@ -133,7 +133,7 @@ void Server::event_loop(int max_events) {
                 for (auto func : this->timer_hook) {
                     func(this);
                 }
-                if (this->time_stamp % 10 == 0) {
+                if (this->time_stamp % 60 == 0) {
                     // clean dead connection
                     this->clean_old_connections();
                 }
@@ -178,9 +178,6 @@ void Server::load_module(std::string module) {
     if (available_modules.find(module) != available_modules.end()) {
         auto handle = dlopen(("libmodule_" + module + ".so").c_str(), RTLD_LAZY);
         this->loaded_modules[module] = handle;
-        for (auto && i : this->loaded_modules) {
-            std::cout << std::get<0>(i) << ": " << std::get<1>(i);
-        }
         auto module_load = (ModuleLoad) dlsym(handle, "module_load");
         module_load(this);
     }
@@ -220,7 +217,6 @@ void Server::command_handler() {
     } else {
         IF_FALSE_EXIT(false);
     }
-    std::cout << cmd.substr(12) << std::endl;
     if (cmd.substr(0, 11) == "load-module") {
         this->load_module(cmd.substr(12));
     }
@@ -233,9 +229,10 @@ void Server::unload_module(std::string module) {
     auto m = this->loaded_modules.find(module);
     if (m != this->loaded_modules.end()) {
         auto handle = std::get<1>(*m);
+        this->loaded_modules.erase(m);
         auto module_unload = (ModuleUnload) dlsym(handle, "module_unload");
         module_unload(this);
-        std::cout << "Unload Module!" << std::endl;
+        dlclose(handle);
     } else {
         std::cout << "Module " << module << " is not loaded!\n";
     }

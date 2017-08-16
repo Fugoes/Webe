@@ -1,13 +1,9 @@
 #include "module_base.h"
 #include <iostream>
-#include <cstdint>
 #include <cinttypes>
-
-static uint64_t count = 0;
 
 static HTTPResponse *http_request_handler(Client *client) {
     auto response = new HTTPResponse();
-    count++;
     response->version = "HTTP/1.1";
     response->status = "404 Not Found";
     response->data = "<html>"
@@ -26,20 +22,14 @@ static HTTPResponse *http_request_handler(Client *client) {
     return response;
 }
 
-static void timer_handler(Server *server) {
-    printf("%10" PRIu64 " 404 Count %" PRIu64 "\n", server->time_stamp, count);
-}
-
 int module_load(Server *server) {
-    printf("Loading Module 404\n");
+    printf("Loading Module 404...\n");
     Server::append_to_hook<HTTPRequestHandler>(server->http_request_hook, &http_request_handler);
-    Server::append_to_hook<TimerHandler>(server->timer_hook, &timer_handler);
     printf("Loaded Module 404\n");
 }
 
 int module_unload(Server *server) {
-    printf("Unloading Module 404\n");
+    printf("Unloading Module 404...\n");
     Server::remove_from_hook<HTTPRequestHandler>(server->http_request_hook, &http_request_handler);
-    Server::remove_from_hook<TimerHandler>(server->timer_hook, &timer_handler);
     printf("Unloaded Module 404\n");
 }
