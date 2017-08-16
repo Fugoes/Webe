@@ -88,6 +88,10 @@ static void load_file_into_mem() {
             std::tie(buf, size) = load_file(file);
             std::cout << file << std::endl;
             filename_to_buffer[file] = std::make_tuple(buf, size, "text/css");
+        } else if (file.size() > 4 && file.substr(file.size() - 3) == ".js") {
+            std::tie(buf, size) = load_file(file);
+            std::cout << file << std::endl;
+            filename_to_buffer[file] = std::make_tuple(buf, size, "application/javascript");
         }
     }
 }
@@ -103,11 +107,13 @@ int module_load(Server *server) {
     load_file_into_mem();
     Server::insert_to_front_of_hook(server->http_request_hook, &http_request_handler);
     printf("Loaded module FileServer\n");
+    return 0;
 }
 
 int module_unload(Server *server) {
-    printf("Unloading module FileServer\n");
+    printf("Unloading module FileServer...\n");
     unload_file_from_mem();
     Server::remove_from_hook(server->http_request_hook, &http_request_handler);
     printf("Unloaded module FileServer\n");
+    return 0;
 }

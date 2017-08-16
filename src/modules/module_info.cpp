@@ -41,6 +41,7 @@ int module_load(Server *server) {
     Server::append_to_hook(server->timer_hook, &timer_handler);
     Server::insert_to_front_of_hook(server->http_request_hook, &http_request_handler);
     printf("Loaded module info\n");
+    return 0;
 }
 
 int module_unload(Server *server) {
@@ -48,6 +49,7 @@ int module_unload(Server *server) {
     Server::remove_from_hook(server->timer_hook, &timer_handler);
     Server::remove_from_hook(server->http_request_hook, &http_request_handler);
     printf("Unloaded module info\n");
+    return 0;
 }
 
 static HTTPResponse *http_request_handler(Client *client) {
@@ -55,23 +57,27 @@ static HTTPResponse *http_request_handler(Client *client) {
         auto response = new HTTPResponse();
         response->version = "HTTP/1.1";
         response->status = "200 OK";
-        response->data =
-                "<html><head><title>System Information</title></head>"
-                        "<body bgcolor=\"white\">"
-                        "<hr>"
-                        "<center><h1>System Information</h1></center>"
-                        "<center>" + version + "</center>"
-                        "<hr>"
-                        "<center><h2>Memory</h2>"
-                        "<table border=\"1\">"
-                        "<tr><th>Total</th><td>" + std::to_string(mem_total / 1024) + " MiB</td></tr>"
-                        "<tr><th>Free</th><td>" + std::to_string(mem_free / 1024) + " MiB</td></tr>"
-                        "<tr><th>Available</th><td>" + std::to_string(mem_available / 1024) + " MiB</td></tr>"
-                        "</table></center>"
-                        "<hr>"
-                        "<center>Webe/0.1</center>"
-                        "</body>"
-                        "</html>";
+        response->data = \
+                "<!DOCTYPE html>" \
+                "<html>" \
+                "<head>" \
+                "<link rel=\"stylesheet\" type=\"text/css\" href=\"/static/nice.css\" media=\"screen\"/>" \
+                "<script src=\"/static/nice.js\"></script>" \
+                "</head>" \
+                "<title>System Information</title>" \
+                "<body>" \
+                "<h1>Hello World!</h1>" \
+                "<div class=\"entry\">" \
+                "<input type=\"button\" value=\"Memory Usage\" class=\"button\" onclick=\"divDisplayAndHide('MemoryUsage')\"/>" \
+                "<div id=\"MemoryUsage\" class=\"display\">" \
+                "<table id=\"MemoryUsageTable\" class=\"table\" border=\"0\" style=\"width: 30%\">" \
+                "<tr><th align=\"left\">Free</th><td align=\"right\">" + std::to_string(mem_free / 1024) + " MiB</td></tr>" \
+                "<tr><th align=\"left\">Available</th><td align=\"right\">" + std::to_string(mem_available / 1024) + " MiB</td></tr>" \
+                "</table>" \
+                "</div>" \
+                "</div>" \
+                "</body>" \
+                "</html>";
 
         response->header.push_back(std::make_tuple("Server", "Webe/0.1"));
         response->header.push_back(std::make_tuple("Data", HTTPResponse::date()));

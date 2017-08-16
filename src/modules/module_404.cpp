@@ -26,10 +26,12 @@ int module_load(Server *server) {
     printf("Loading Module 404...\n");
     Server::append_to_hook<HTTPRequestHandler>(server->http_request_hook, &http_request_handler);
     printf("Loaded Module 404\n");
+    return 0;
 }
 
 int module_unload(Server *server) {
     printf("Unloading Module 404...\n");
     Server::remove_from_hook<HTTPRequestHandler>(server->http_request_hook, &http_request_handler);
     printf("Unloaded Module 404\n");
+    return 0;
 }

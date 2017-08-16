@@ -176,7 +176,7 @@ void Server::clean_old_connections() {
 
 void Server::load_module(std::string module) {
     if (available_modules.find(module) != available_modules.end()) {
-        auto handle = dlopen(("libmodule_" + module + ".so").c_str(), RTLD_LAZY);
+        auto handle = dlopen(("libmodule_" + module + ".so").c_str(), RTLD_NOW);
         this->loaded_modules[module] = handle;
         auto module_load = (ModuleLoad) dlsym(handle, "module_load");
         module_load(this);
