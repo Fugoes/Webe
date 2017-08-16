@@ -1,0 +1,41 @@
+h1 {
+    font-family: monospace;
+    text-align: center;
+}
+body { background-color: #FFFFFF; }
+.display { display: block; }
+.hide { display: none; }
+.button {
+    background-color: #CCEEFF;
+    border: none;
+    color: black;
+    padding: 5px 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    width: 100%;
+    font-family: monospace;
+    border-radius: 5px;
+}
+.button:hover { background-color: #CDEEEF; }
+.entry {
+    width: 80%;
+    background-color: #EEEEFF;
+    color: black;
+    font-family: monospace;
+    margin-right: auto;
+    margin-left: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+.table {
+    font-family: monospace;
+    margin-right: auto;
+    margin-left: auto;
+    padding: 10px;
+}
+.text {
+    padding: 10px;
+}

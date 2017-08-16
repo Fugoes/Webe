@@ -12,8 +12,9 @@ set(SOURCE_FILES
         src/read_buffer.h)
 
 add_library(module_404 SHARED src/modules/module_404.cpp src/modules/module_base.h)
-add_library(module_info SHARED src/modules/module_info.cpp src/modules/module_base.h)
+add_library(module_info SHARED src/modules/module_info.cpp src/modules/module_base.h src/modules/thread_info.cpp)
 add_library(module_file_server SHARED src/modules/module_file_server.cpp src/modules/module_base.h)
+target_link_libraries(module_info boost_filesystem stdc++fs)
 
 add_executable(webed src/main.cpp ${SOURCE_FILES})
 target_link_libraries(webed dl module_404 module_info module_file_server)
