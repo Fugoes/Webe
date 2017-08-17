@@ -11,6 +11,8 @@ extern "C" {
 #include <vector>
 #include <iostream>
 #include <set>
+#include <fcntl.h>
+#include <csignal>
 #include "available_modules.h"
 #include "utils.h"
 
@@ -18,6 +20,9 @@ void do_help() {
     printf("Usage: webectl load-module <module>\n" \
            "       webectl unload-module <module>\n" \
            "       webectl list-server\n" \
+           "       webectl stop-server\n" \
+           "       webectl start-server <processes> [ OPTIONS ]\n" \
+           "where  OPTIONS = { -a <address> | -p <port> }\n" \
     );
 }
 
@@ -62,13 +67,29 @@ int main(int argc, char *argv[]) {
             if (pids.size() == 0) {
                 printf("No server is running.\n");
             } else {
-                printf("        pid\n");
+                printf("        PID\n");
                 printf(" ----------\n");
                 for (auto i : pids) {
                     printf(" %10d\n", i);
                 }
             }
             return 0;
+        } else if (cmd == "stop-server") {
+            auto pids = get_servers();
+            if (pids.size() == 0) {
+                printf("No server is running.\n");
+            } else {
+                printf("        PID  STATUS\n");
+                printf(" ---------- -------\n");
+                for (auto pid : pids) {
+                    printf(" %10d ", pid);
+                    if (kill(pid, SIGINT) == 0) {
+                        printf("STOPPED\n");
+                    } else {
+                        printf("  ERROR\n");
+                    }
+                }
+            }
         } else {
             do_help();
             return 0;
@@ -83,13 +104,100 @@ int main(int argc, char *argv[]) {
                     send_to_pid(pid, "load-module " + arg);
                 }
             }
-        }
-        if (cmd == "unload-module") {
+        } else if (cmd == "unload-module") {
             if (available_modules.find(arg) != available_modules.end()) {
                 for (auto pid : get_servers()) {
                     send_to_pid(pid, "unload-module " + arg);
                 }
             }
+        } else if (cmd == "start-server") {
+            auto n = std::stoi(arg);
+            if (n <= 0) {
+                do_help();
+                return 0;
+            }
+            for (auto i = 0; i < n; i++) {
+                pid_t pid = fork();
+                IF_NEGATIVE_EXIT(pid);
+                if (pid == 0) {
+                    close(1);
+                    auto fd = open("/dev/null", O_RDWR);
+                    dup2(fd, 1);
+                    execl("./webed", "./webed", NULL);
+                    return 0;
+                }
+            }
+        } else {
+            do_help();
+            return 0;
+        }
+    }
+    if (argc > 3) {
+        auto cmd = std::string(argv[1]);
+        auto arg = std::string(argv[2]);
+        auto n = std::stoi(arg);
+        if (cmd == "start-server") {
+            if (argc == 5) {
+                if (std::string(argv[3]) == "-p") {
+                    for (auto i = 0; i < n; i++) {
+                        pid_t pid = fork();
+                        IF_NEGATIVE_EXIT(pid);
+                        if (pid == 0) {
+                            close(1);
+                            auto fd = open("/dev/null", O_RDWR);
+                            dup2(fd, 1);
+                            execl("./webed", "./webed", "-p", argv[4], NULL);
+                            return 0;
+                        }
+                    }
+                }
+                if (std::string(argv[3]) == "-a") {
+                    for (auto i = 0; i < n; i++) {
+                        pid_t pid = fork();
+                        IF_NEGATIVE_EXIT(pid);
+                        if (pid == 0) {
+                            close(1);
+                            auto fd = open("/dev/null", O_RDWR);
+                            dup2(fd, 1);
+                            execl("./webed", "./webed", "-a", argv[4], NULL);
+                            return 0;
+                        }
+                    }
+                }
+            } else if (argc == 7) {
+                if (std::string(argv[3]) == "-p" && std::string(argv[5]) == "-a") {
+                    for (auto i = 0; i < n; i++) {
+                        pid_t pid = fork();
+                        IF_NEGATIVE_EXIT(pid);
+                        if (pid == 0) {
+                            close(1);
+                            auto fd = open("/dev/null", O_RDWR);
+                            dup2(fd, 1);
+                            execl("./webed", "./webed", "-p", argv[4], "-a", argv[6], NULL);
+                            return 0;
+                        }
+                    }
+                }
+                if (std::string(argv[3]) == "-a" && std::string(argv[5]) == "-p") {
+                    for (auto i = 0; i < n; i++) {
+                        pid_t pid = fork();
+                        IF_NEGATIVE_EXIT(pid);
+                        if (pid == 0) {
+                            close(1);
+                            auto fd = open("/dev/null", O_RDWR);
+                            dup2(fd, 1);
+                            execl("./webed", "./webed", "-a", argv[4], "-p", argv[6], NULL);
+                            return 0;
+                        }
+                    }
+                }
+            } else {
+                do_help();
+                return 0;
+            }
+        } else {
+            do_help();
+            return 0;
         }
     }
     return 0;

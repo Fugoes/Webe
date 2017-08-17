@@ -37,5 +37,6 @@ body { background-color: #FFFFFF; }
     padding: 10px;
 }
 .text {
+    font-family: monospace;
     padding: 10px;
 }
