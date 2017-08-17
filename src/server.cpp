@@ -3,7 +3,7 @@
 #include <cinttypes>
 #include <iostream>
 #include <forward_list>
-#include <signal.h>
+#include "available_modules.h"
 
 extern "C" {
 #include <sys/types.h>
@@ -16,6 +16,7 @@ extern "C" {
 #include <unistd.h>
 #include <fcntl.h>
 #include <dlfcn.h>
+#include <signal.h>
 }
 
 Server *this_server;

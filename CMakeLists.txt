@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.7)
 project(Webe)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 
 set(SOURCE_FILES
         src/utils.h src/server.cpp
@@ -16,7 +17,6 @@ add_library(module_info SHARED src/modules/module_info.cpp src/modules/module_ba
 add_library(module_file_server SHARED src/modules/module_file_server.cpp src/modules/module_base.h)
 target_link_libraries(module_info boost_filesystem stdc++fs)
 
-add_executable(webed src/main.cpp ${SOURCE_FILES})
+add_executable(webed src/webed.cpp ${SOURCE_FILES})
 target_link_libraries(webed dl module_404 module_info module_file_server)
-add_executable(webectl src/webectl.cpp ${SOURCE_FILES})
-target_link_libraries(webectl dl module_404 module_info module_file_server)
+add_executable(webectl src/webectl.cpp src/available_modules.h)

@@ -42,12 +42,6 @@ static void get_version_info() {
     std::getline(file, version);
 }
 
-static void refresh_cpu_info() {
-    std::ifstream file;
-    std::stringstream ss;
-    std::string s;
-}
-
 static void timer_handler(Server *server) {
     refresh_mem_info();
     refresh_disk_info();

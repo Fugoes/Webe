@@ -11,13 +11,8 @@ extern "C" {
 #include <vector>
 #include <iostream>
 #include <set>
+#include "available_modules.h"
 #include "utils.h"
-
-const std::set<std::string> available_modules = {
-        "404",
-        "info",
-        "file_server",
-};
 
 void do_help() {
     printf("Usage: webectl load-module <module>\n" \
