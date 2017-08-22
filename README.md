@@ -2,7 +2,7 @@
 
 ## Intorduction
 
-`Webe` is a web server. I wrote it to hand it in as homework...
+`Webe` is a web server. I wrote it to hand it in as homework... It uses event loop with non-blocking IO and epoll.
 
 ## How to Build
 
@@ -85,11 +85,11 @@ This result is tested with an i5 4210H CPU.
 
 ## Available Modules
 
-| Name        | Description                             |
-|-------------|-----------------------------------------|
-| 404         | Return `404 Not Found` page             |
-| info        | Show information about the host machine |
-| file_server | A static file server                    |
+| Name          | Description                             |
+|---------------|-----------------------------------------|
+| `404`         | Return `404 Not Found` page             |
+| `info`        | Show information about the host machine |
+| `file_server` | A static file server                    |
 
 ## License
 
