@@ -82,3 +82,15 @@ Transfer rate:          41979.25 [Kbytes/sec] received
 ```
 
 This result is tested with an i5 4210H CPU.
+
+## Available Modules
+
+| Name        | Description                             |
+|-------------|-----------------------------------------|
+| 404         | Return `404 Not Found` page             |
+| info        | Show information about the host machine |
+| file_server | A static file server                    |
+
+## License
+
+`Webe` is licensed under the [WTFPL](http://www.wtfpl.net/). Note that you shall not hand it in as your homework...
