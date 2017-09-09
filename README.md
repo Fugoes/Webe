@@ -1,12 +1,14 @@
 # Webe
 
-## Intorduction
+## Introduction
 
 `Webe` is a web server. I wrote it to hand it in as homework... It uses event loop with non-blocking IO and epoll.
 
 ## How to Build
 
 ```bash
+# For Debian 9 with gcc-6.3.0
+$ apt install -y libboost-filesystem-dev
 $ git clone https://github.com/Fugoes/Webe.git
 $ cd Webe
 $ mkdir cmake
@@ -93,7 +95,7 @@ This result is tested with an i5 4210H CPU.
 ## Available Modules
 
 | Name          | Description                             |
-|---------------|-----------------------------------------|
+| ------------- | --------------------------------------- |
 | `404`         | Return `404 Not Found` page             |
 | `info`        | Show information about the host machine |
 | `file_server` | A static file server                    |
