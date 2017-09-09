@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     }
     auto server = Server(address, port_no, 1200);
     this_server = &server;
-    std::vector<std::string> modules = {"404", "info"};
+    std::vector<std::string> modules = {"404", "info", "file_server"};
     server.start(modules);
     return 0;
 }

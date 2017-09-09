@@ -30,7 +30,7 @@ Usage: webectl load-module <module>
 where  OPTIONS = { -a <address> | -p <port> }
 ```
 
-You could directly run `./webed` instead. By default, it will load 404 module and info module.
+You could directly run `./webed` instead. By default, it will load all modules.
 
 ## Demo
 
