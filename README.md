@@ -45,10 +45,17 @@ $ ./webectl list-server
        1907
        1905
        1908
-$ ./webectl load-module file_server
 ```
 
 Now browse `http://127.0.0.1:8080/info`.
+
+To unload some module:
+
+```shell
+$ ./webectl unload-module info
+```
+
+Now browse `http://127.0.0.1:8080/info`, it shall be `404 Not Found`.
 
 To stop all server:
 
