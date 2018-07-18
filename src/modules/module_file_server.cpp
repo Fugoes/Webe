@@ -22,7 +22,7 @@ static HTTPResponse *http_request_handler(Client *client) {
         response->status = "200 OK";
         response->data.assign(std::get<0>(m->second), (size_t)std::get<1>(m->second));
         response->header.push_back(std::make_tuple("Server", "Webe/0.1"));
-        response->header.push_back(std::make_tuple("Data", HTTPResponse::date()));
+        response->header.push_back(std::make_tuple("Date", HTTPResponse::date()));
         response->header.push_back(std::make_tuple("Content-Type", std::get<2>(m->second)));
         response->header.push_back(std::make_tuple("Content-Length", std::to_string(response->data.size())));
         response->header.push_back(std::make_tuple("Connection", "keep-alive"));

@@ -15,7 +15,7 @@ static HTTPResponse *http_request_handler(Client *client) {
             "</html>";
 
     response->header.push_back(std::make_tuple("Server", "Webe/0.1"));
-    response->header.push_back(std::make_tuple("Data", HTTPResponse::date()));
+    response->header.push_back(std::make_tuple("Date", HTTPResponse::date()));
     response->header.push_back(std::make_tuple("Content-Type", "text/html"));
     response->header.push_back(std::make_tuple("Content-Length", std::to_string(response->data.size())));
     response->header.push_back(std::make_tuple("Connection", "keep-alive"));
